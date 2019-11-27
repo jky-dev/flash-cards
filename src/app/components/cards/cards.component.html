@@ -1,0 +1,7 @@
+<h3>{{chosenCategory}}</h3>
+<h1>{{chosenQuestion}}</h1>
+<h1 *ngIf="showAnswer">{{chosenAnswer}}</h1>
+<button (click)="showAnswer=true">check</button>
+<button *ngIf="counter !== totalQuestions" (click)="nextQuestion()">next</button>
+<button *ngIf="counter === totalQuestions" (click)="reset()">reset</button>
+<p>{{counter}}/{{totalQuestions}}</p>
