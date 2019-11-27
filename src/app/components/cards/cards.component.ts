@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Question } from 'src/question';
 import { AngularFireDatabase } from '@angular/fire/database';
-import { CrudService } from 'src/app/services/crud.service';
-import { Observable } from 'rxjs';
+import { DataSnapshot } from '@angular/fire/database/interfaces';
 
 @Component({
   selector: 'app-cards',
@@ -12,65 +11,72 @@ import { Observable } from 'rxjs';
 export class CardsComponent implements OnInit {
   // db url : https://flashcards-68d42.firebaseio.com/
   qMap = new Map<string, Question[]>();
-  questionsRef;
+  tempMap = new Map<string, Question[]>();
+  dbRef;
+  ssVal;
   questionSet;
   totalQuestions;
   counter = 0;
-  currentIndex;
+  categories: string[] = [];
+  catIndex;
+  qIndex;
   showAnswer = false;
   chosenCategory: string;
   chosenQuestion: string;
   chosenAnswer: string;
-  constructor(db: AngularFireDatabase) {
-    db.database.ref('1hJ1vqXhm0L06NBuq-p4eyNwl188AEpRVRBeAK7Wjh6Y').once('value').then(function(snapshot) {
-        snapshot.forEach(element => {
-        console.log(element.key);
-        const questions: Question[] = [];
-        element.val().forEach(q => {
-          console.log(q);
-          const question: Question = { id: q.id, question: q.question, answer: q.answer };
-          questions.push(question);
-        });
-        this.addToMap(element.key, questions);
-        console.log(questions);
-      })
-    })
+  loaded = false;
+  constructor(private db: AngularFireDatabase) {
+    this.dbRef = db.database.ref('1_Aa13LBY37FD_7KR1EznSZoNNxnt-MUBaAnUYrLie0w');
   }
 
   addToMap(str: string, qs: Question[]) {
     this.qMap.set(str, qs);
   }
 
+  ngOnInit() {
+    this.initializeSet();
+  }
+
   initializeSet() {
-    this.questionsRef.ref('1hJ1vqXhm0L06NBuq-p4eyNwl188AEpRVRBeAK7Wjh6Y/Sheet1').once('value', function(snapshot) {
+    this.dbRef.once('value').then((snapshot: DataSnapshot) => {
+      let totalQ = 0;
       snapshot.forEach(element => {
-        this.questionSet.push(element);
-        console.log(element);
+        const questions: Question[] = [];
+        element.val().forEach(q => {
+          const question: Question = { id: q.id, question: q.question, answer: q.answer };
+          questions.push(question);
+          totalQ++;
+        });
+        this.qMap.set(element.key, questions);
+        this.categories.push(element.key);
       });
+      this.loaded = true;
+      console.log(this.qMap);
+      this.selectRandom();
+      this.totalQuestions = totalQ;
     });
   }
 
-  ngOnInit() {
-    //this.selectRandom();
-  }
-
   selectRandom() {
-    this.currentIndex = Math.floor(Math.random()*this.questionSet.length);
-    if (this.questionSet.length === 0) {
+    console.log('selecting random');
+    this.catIndex = Math.floor(Math.random() * this.qMap.size);
+    this.chosenCategory = this.categories[this.catIndex];
+    this.qIndex = Math.floor(Math.random() * this.qMap.get(this.chosenCategory).length);
+    const questions = this.qMap.get(this.chosenCategory);
+    if (questions.length === 0) {
       this.chosenCategory = 'Error no more questions';
       this.chosenAnswer = '-';
       this.chosenQuestion = '-';
       return;
     }
-    this.chosenCategory = this.questionSet[this.currentIndex].category;
-    this.chosenQuestion = this.questionSet[this.currentIndex].question;
-    this.chosenAnswer = this.questionSet[this.currentIndex].answer;
+    this.chosenQuestion = questions[this.qIndex].question;
+    this.chosenAnswer = questions[this.qIndex].answer;
     this.counter++;
   }
 
   nextQuestion() {
     this.showAnswer = false;
-    this.questionSet.splice(this.currentIndex, 1);
+    this.qMap.get(this.chosenCategory).splice(this.qIndex, 1);
     this.selectRandom();
   }
 
@@ -79,6 +85,4 @@ export class CardsComponent implements OnInit {
     this.showAnswer = false;
     this.selectRandom();
   }
-
-
 }
