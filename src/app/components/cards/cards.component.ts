@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Question } from 'src/question';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { DataSnapshot } from '@angular/fire/database/interfaces';
+import { CrudService } from 'src/app/services/crud.service';
 
 @Component({
   selector: 'app-cards',
@@ -10,79 +11,79 @@ import { DataSnapshot } from '@angular/fire/database/interfaces';
 })
 export class CardsComponent implements OnInit {
   // db url : https://flashcards-68d42.firebaseio.com/
-  qMap = new Map<string, Question[]>();
-  tempMap = new Map<string, Question[]>();
-  dbRef;
-  ssVal;
-  questionSet;
-  totalQuestions;
-  counter = 0;
+  questions: Question[] = [];
+  shuffledQs: Question[] = [];
+  readonly refId: string = '1_Aa13LBY37FD_7KR1EznSZoNNxnt-MUBaAnUYrLie0w';
+  dbRef: firebase.database.Reference;
   categories: string[] = [];
-  catIndex;
-  qIndex;
   showAnswer = false;
-  chosenCategory: string;
-  chosenQuestion: string;
-  chosenAnswer: string;
   loaded = false;
-  constructor(private db: AngularFireDatabase) {
-    this.dbRef = db.database.ref('1_Aa13LBY37FD_7KR1EznSZoNNxnt-MUBaAnUYrLie0w');
+  currentIndex = 0;
+  skipMap = new Map<string, boolean>();
+  alwaysShow = false;
+
+  constructor(private crud: CrudService) {
+    this.questions = crud.getQuestions();
+    this.shuffledQs = crud.getShuffled();
+    this.categories = crud.getCategories();
+    this.initSkipMap();
   }
 
-  addToMap(str: string, qs: Question[]) {
-    this.qMap.set(str, qs);
-  }
+  ngOnInit() {}
 
-  ngOnInit() {
-    this.initializeSet();
-  }
-
-  initializeSet() {
-    this.dbRef.once('value').then((snapshot: DataSnapshot) => {
-      let totalQ = 0;
-      snapshot.forEach(element => {
-        const questions: Question[] = [];
-        element.val().forEach(q => {
-          const question: Question = { id: q.id, question: q.question, answer: q.answer };
-          questions.push(question);
-          totalQ++;
-        });
-        this.qMap.set(element.key, questions);
-        this.categories.push(element.key);
-      });
-      this.loaded = true;
-      console.log(this.qMap);
-      this.selectRandom();
-      this.totalQuestions = totalQ;
-    });
-  }
-
-  selectRandom() {
-    console.log('selecting random');
-    this.catIndex = Math.floor(Math.random() * this.qMap.size);
-    this.chosenCategory = this.categories[this.catIndex];
-    this.qIndex = Math.floor(Math.random() * this.qMap.get(this.chosenCategory).length);
-    const questions = this.qMap.get(this.chosenCategory);
-    if (questions.length === 0) {
-      this.chosenCategory = 'Error no more questions';
-      this.chosenAnswer = '-';
-      this.chosenQuestion = '-';
-      return;
+  shuffle() {
+    console.log('shuffling');
+    if (this.shuffledQs.length !== this.questions.length) {
+      this.shuffledQs = [...this.questions];
     }
-    this.chosenQuestion = questions[this.qIndex].question;
-    this.chosenAnswer = questions[this.qIndex].answer;
-    this.counter++;
+    const array = this.shuffledQs;
+    let length = array.length;
+    let i: number;
+    let temp: Question;
+    while (length) {
+      i = Math.floor(Math.random() * length--);
+      temp = array[length];
+      array[length] = array[i];
+      array[i] = temp;
+    }
   }
 
   nextQuestion() {
+    while (this.skipMap.get(this.shuffledQs[++this.currentIndex].category)) {
+      if (this.currentIndex === this.shuffledQs.length - 1) {
+        return;
+      }
+    }
     this.showAnswer = false;
-    this.qMap.get(this.chosenCategory).splice(this.qIndex, 1);
-    this.selectRandom();
+  }
+
+  previousQuestion() {
+    while (this.skipMap.get(this.shuffledQs[--this.currentIndex].category)) {
+      if (this.currentIndex === 0) {
+        return;
+      }
+    }
+    this.showAnswer = false;
+  }
+
+  toggleShowAnswer() {
+    this.showAnswer = !this.showAnswer;
   }
 
   reset() {
-    this.counter = 0;
+    this.currentIndex = 0;
     this.showAnswer = false;
-    this.selectRandom();
+    this.shuffle();
+  }
+
+  initSkipMap() {
+    this.categories.forEach((category: string) => {
+      this.skipMap.set(category, false);
+    });
+  }
+
+  updateCheck(category: string) {
+    this.skipMap.set(category, !this.skipMap.get(category));
+    console.log(category + ' ' + this.skipMap.get(category));
   }
 }

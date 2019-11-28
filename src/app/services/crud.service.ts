@@ -1,37 +1,98 @@
 import { Injectable } from '@angular/core';
 import { Question } from 'src/question';
-import { AngularFireDatabase, snapshotChanges } from '@angular/fire/database';
-import { mapToMapExpression } from '@angular/compiler/src/render3/util';
+import { AngularFireDatabase } from '@angular/fire/database';
+import { DataSnapshot } from '@angular/fire/database/interfaces';
+import { Observable, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CrudService {
-  dbString = '1hJ1vqXhm0L06NBuq-p4eyNwl188AEpRVRBeAK7Wjh6Y';
-  qMap = new Map<string, Array<Question>>();
+  questions: Question[] = [];
+  shuffledQs: Question[] = [];
+  categories: string[] = [];
+  loaded = false;
+  isReady: Subject<boolean> = new Subject();
+  dbRef: firebase.database.Reference;
+  map = new Map<string, Question[]>();
+  readonly refId: string = '1_Aa13LBY37FD_7KR1EznSZoNNxnt-MUBaAnUYrLie0w';
 
-  constructor(private db: AngularFireDatabase) { }
+  constructor(private db: AngularFireDatabase) {
+    this.dbRef = db.database.ref(this.refId);
+  }
 
-  GetMap() {
-    this.db.database.ref(this.dbString).once('value', function(snapshot) {
-      // snapshot.forEach(element => {
-      //   console.log(element.key);
-      //   let questions: Question[] = [];
-      //   element.val().forEach(q => {
-      //     console.log(q);
-      //     let question: Question = { id: q.id, question: q.question, answer: q.answer };
-      //     questions.push(question);
-      //   });
-      //   if (this.qMap === null) {
-      //     console.log('qMap is null');
-      //     return;
-      //   }
-      //   console.log(questions);
-      // })
+  initialize() {
+    if (this.loaded) {
+      console.log('Already Initialized');
+      this.isReady.next(this.loaded);
+      return;
+    }
+    this.questions = [];
+    this.categories = [];
+    this.dbRef.once('value').then((snapshot: DataSnapshot) => {
+      snapshot.forEach(element => {
+        element.val().forEach(q => {
+          const question: Question = { category: element.key, question: q.question, answer: q.answer };
+          this.questions.push(question);
+        });
+        this.categories.push(element.key);
+      });
+      console.log(this.questions);
+      this.shuffle();
+      this.loaded = true;
+      this.isReady.next(this.loaded);
     });
   }
 
-  // GetObservable(): FirebaseListObservable<Item[]> {
-  //   return this.db.list(this.dbString);
-  // }
+  shuffle() {
+    console.log('shuffling');
+    if (this.shuffledQs.length !== this.questions.length) {
+      this.shuffledQs = [...this.questions];
+    }
+    const array = this.shuffledQs;
+    let length = array.length;
+    let i: number;
+    let temp: Question;
+    while (length) {
+      i = Math.floor(Math.random() * length--);
+      temp = array[length];
+      array[length] = array[i];
+      array[i] = temp;
+    }
+  }
+
+  getIsReadyObserver() {
+    return this.isReady.asObservable();
+  }
+
+  getIsReady() {
+    return this.loaded;
+  }
+
+  getQuestions() {
+    return this.questions;
+  }
+
+  getShuffled() {
+    return this.shuffledQs;
+  }
+
+  getCategories() {
+    return this.categories;
+  }
+
+  getMap() {
+    if (this.map.size === 0) {
+      this.questions.forEach((question: Question) => {
+        if (this.map.has(question.category)) {
+          this.map.get(question.category).push(question);
+        } else {
+          const array = [question];
+          this.map.set(question.category, array);
+        }
+      });
+      console.log(this.map);
+    }
+    return this.map;
+  }
 }

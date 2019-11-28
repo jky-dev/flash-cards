@@ -1,5 +1,8 @@
 <div>
   <h1>Optom Cards</h1>
-  <h2 routerLink="/quiz">Begin</h2>
-  <h2>View All Questions</h2>
+  <div *ngIf="ready">
+    <h2 routerLink="/quiz">Begin</h2>
+    <h2 routerLink="/all">View All Questions</h2>
+  </div>
+  <p *ngIf="!ready">Fetching all questions...</p>
 </div>
