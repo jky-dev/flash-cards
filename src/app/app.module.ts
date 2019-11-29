@@ -1,24 +1,27 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LandingComponent } from './components/landing/landing.component';
-import { CardsComponent } from './components/cards/cards.component';
+import { QuizComponent, PreferencesDialog } from './components/quiz/quiz.component';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { environment } from 'src/environments/environment.prod';
 import { AllQuestionsComponent } from './components/all-questions/all-questions.component';
-import { MatButtonModule, MatCheckboxModule } from '@angular/material';
+import { MatButtonModule, MatCheckboxModule, MatDialogModule, MatIconModule, MatCardModule } from '@angular/material';
 import { FormsModule } from '@angular/forms';
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
   declarations: [
     AppComponent,
     LandingComponent,
-    CardsComponent,
-    AllQuestionsComponent
+    QuizComponent,
+    AllQuestionsComponent,
+    PreferencesDialog
   ],
   imports: [
     BrowserModule,
@@ -28,9 +31,15 @@ import { FormsModule } from '@angular/forms';
     AngularFireDatabaseModule,
     MatButtonModule,
     MatCheckboxModule,
-    FormsModule
+    FormsModule,
+    MatDialogModule,
+    BrowserAnimationsModule,
+    MatIconModule,
+    FlexLayoutModule,
+    MatCardModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [PreferencesDialog]
 })
 export class AppModule { }

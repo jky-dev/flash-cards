@@ -1,2 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
 @import '@angular/material/prebuilt-themes/deeppurple-amber.css';
+
+.logo {
+  font-family: 'Rubik', sans-serif !important;
+}
+
+* {
+  font-family: 'Karla', sans-serif !important;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}

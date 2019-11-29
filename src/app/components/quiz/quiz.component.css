@@ -1,0 +1,31 @@
+.quiz-container {
+  padding: 1rem;
+  height: 100%;
+  max-width: 600px;
+  margin: auto;
+}
+
+.quiz-container > div {
+  width: 100%;
+}
+
+mat-icon {
+  font-family: 'Material Icons' !important;
+  margin-left: 1rem;
+  vertical-align: middle;
+}
+
+mat-card {
+  margin-bottom: 1rem;
+}
+
+button {
+  margin: 0 1rem;
+}
+
+#hideShowButton {
+  width: 71.35px;
+}
+
+
+

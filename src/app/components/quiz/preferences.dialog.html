@@ -1,0 +1,8 @@
+<h1 mat-dialog-title>Preferences</h1>
+<mat-checkbox [(ngModel)]="data.alwaysShow">Always show answers</mat-checkbox>
+<p>Skip Categories</p>
+<div fxLayout="column">
+  <div *ngFor="let category of data.map | keyvalue">
+    <mat-checkbox  [checked]="category.value" (change)="updateCheck(category.key)">{{category.key}}</mat-checkbox>
+  </div>
+</div>

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Question } from 'src/question';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { DataSnapshot } from '@angular/fire/database/interfaces';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +23,6 @@ export class CrudService {
 
   initialize() {
     if (this.loaded) {
-      console.log('Already Initialized');
       this.isReady.next(this.loaded);
       return;
     }
@@ -32,12 +31,11 @@ export class CrudService {
     this.dbRef.once('value').then((snapshot: DataSnapshot) => {
       snapshot.forEach(element => {
         element.val().forEach(q => {
-          const question: Question = { category: element.key, question: q.question, answer: q.answer };
+          const question: Question = { category: element.key, question: q.question.trim(), answer: q.answer };
           this.questions.push(question);
         });
         this.categories.push(element.key);
       });
-      console.log(this.questions);
       this.shuffle();
       this.loaded = true;
       this.isReady.next(this.loaded);
@@ -45,7 +43,6 @@ export class CrudService {
   }
 
   shuffle() {
-    console.log('shuffling');
     if (this.shuffledQs.length !== this.questions.length) {
       this.shuffledQs = [...this.questions];
     }
@@ -91,7 +88,6 @@ export class CrudService {
           this.map.set(question.category, array);
         }
       });
-      console.log(this.map);
     }
     return this.map;
   }

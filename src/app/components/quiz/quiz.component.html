@@ -1,0 +1,27 @@
+<div class="quiz-container" fxLayout="column" fxLayoutAlign="space-between center" fxLayoutAlign.gt-xs="start center">
+  <div>
+    <h2 fxLayout="row" fxLayoutAlign="space-between center">
+      <span routerLink="/"><b class="logo">OptomCards</b> - {{currentIndex + 1}}/{{shuffledQs.length}}</span>
+      <span>
+        <mat-icon (click)="reset()">refresh</mat-icon>
+        <mat-icon (click)="openDialog()">more_vert</mat-icon>
+      </span>
+    </h2>
+  </div>
+  <div class="quiz-body" fxFlex fxFlex.gt-xs="30%">
+    <mat-card fxFlex>
+      <h3 class="category"><i>{{shuffledQs[currentIndex].category}}</i></h3>
+      <h2 class="question">
+        {{shuffledQs[currentIndex].question.endsWith('?') ? [shuffledQs[currentIndex].question] : [shuffledQs[currentIndex].question] + '?'}}
+      </h2>
+      <h3 class="answer" *ngIf="showAnswer || alwaysShow">{{shuffledQs[currentIndex].answer}}</h3>
+    </mat-card>
+  </div>
+  <div class="quiz-buttons">
+    <div fxLayout="row" fxLayoutAlign="center center">
+      <button mat-raised-button [disabled]="currentIndex === 0" (click)="previousQuestion()">Back</button>
+      <button id="hideShowButton" mat-raised-button (click)="toggleShowAnswer()">{{showAnswer ? 'Hide' : 'Check'}}</button>
+      <button mat-raised-button [disabled]="currentIndex === shuffledQs.length - 1" (click)="nextQuestion()">Next</button>
+    </div>
+  </div>
+</div>
