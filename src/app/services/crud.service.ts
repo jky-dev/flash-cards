@@ -14,7 +14,7 @@ export class CrudService {
   skipCategories: string[] = [];
   alwaysShowAnswer = false;
   user = null;
-  loaded = false;
+  questionsLoaded = false;
   isReady: Subject<boolean> = new Subject();
   map = new Map<string, Question[]>();
   readonly questionsRefId: string = '1_Aa13LBY37FD_7KR1EznSZoNNxnt-MUBaAnUYrLie0w';
@@ -22,13 +22,20 @@ export class CrudService {
   constructor(private db: AngularFireDatabase) {}
 
   initialize() {
-    if (this.loaded) {
-      this.isReady.next(this.loaded);
+    if (this.questionsLoaded) {
+      this.isReady.next(this.questionsLoaded);
       return;
+    } else {
+      this.initQuestions();
+      this.initPreferences();
     }
+  }
+
+  initQuestions() {
     this.questions = [];
     this.categories = [];
     // init questions
+    console.log('loading questions from db');
     this.db.database.ref(this.questionsRefId).once('value').then((snapshot: DataSnapshot) => {
       snapshot.forEach(element => {
         element.val().forEach(q => {
@@ -41,21 +48,26 @@ export class CrudService {
         this.categories.push(element.key);
       });
       this.shuffle();
-    }).then(() => {
-      if (localStorage.getItem('user')) {
-        this.user = JSON.parse(localStorage.getItem('user'));
-        this.db.database.ref('users/' + this.user.uid + '/preferences/categories').once('value').then((snapshot: DataSnapshot) => {
-          snapshot.forEach(element => {
-            this.skipCategories.push(element.val());
-          });
-        });
-        this.db.database.ref('users/' + this.user.uid + '/preferences/showAnswer').once('value').then((snapshot: DataSnapshot) => {
-          this.alwaysShowAnswer = snapshot.val();
-        });
-      }
-      this.loaded = true;
-      this.isReady.next(this.loaded);
+      this.questionsLoaded = true;
+      this.isReady.next(this.questionsLoaded);
     });
+  }
+
+  initPreferences() {
+    console.log('loading preferences from db');
+    if (localStorage.getItem('user')) {
+      this.user = JSON.parse(localStorage.getItem('user'));
+      this.db.database.ref('users/' + this.user.uid + '/preferences/categories').on('value', (snapshot: DataSnapshot) => {
+        this.skipCategories = [];
+        snapshot.forEach(element => {
+          this.skipCategories.push(element.val());
+        });
+        console.log(this.skipCategories);
+      });
+      this.db.database.ref('users/' + this.user.uid + '/preferences/showAnswer').on('value', (snapshot: DataSnapshot) => {
+        this.alwaysShowAnswer = snapshot.val();
+      });
+    }
   }
 
   shuffle() {
@@ -79,7 +91,7 @@ export class CrudService {
   }
 
   getIsReady() {
-    return this.loaded;
+    return this.questionsLoaded;
   }
 
   getQuestions() {
@@ -124,12 +136,16 @@ export class CrudService {
 
   // writes quiz preferences to the database
   setPreferences(uid: string, skip: string[], showAnswer: boolean) {
-    // delete and then set
-    this.db.database.ref('users/' + uid + '/preferences').remove().then(() => {
+    if (uid === null) {
+      console.log('setting locally');
+      this.skipCategories = skip;
+      this.alwaysShowAnswer = showAnswer;
+    } else {
+      console.log('setting preferences to db')
       this.db.database.ref('users/' + uid + '/preferences').set({
         categories : skip,
         showAnswer : showAnswer
       });
-    });
+    }
   }
 }

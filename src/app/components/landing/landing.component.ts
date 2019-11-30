@@ -21,9 +21,11 @@ export class LandingComponent implements OnInit, OnDestroy {
       if (user) {
         this.signedIn = true;
         this.user = JSON.parse(localStorage.getItem('user'));
+        crud.initPreferences();
       } else {
         this.signedIn = false;
         this.user = null;
+        localStorage.removeItem('user');
       }
     });
   }
@@ -37,6 +39,7 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.sub.unsubscribe();
+    this.authObserver.unsubscribe();
   }
 
   login() {
@@ -45,5 +48,6 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   signOut() {
     this.authService.SignOut();
+    localStorage.removeItem('user');
   }
 }

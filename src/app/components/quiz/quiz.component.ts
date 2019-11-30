@@ -1,14 +1,16 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import { Question } from 'src/question';
 import { CrudService } from 'src/app/services/crud.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { AuthenticationService } from 'src/app/services/authentication.service';
 
 @Component({
   selector: 'app-quiz',
   templateUrl: './quiz.component.html',
   styleUrls: ['./quiz.component.css']
 })
-export class QuizComponent implements OnInit {
+export class QuizComponent implements OnInit, OnDestroy {
   // db url : https://flashcards-68d42.firebaseio.com/
   questions: Question[] = [];
   shuffledQs: Question[] = [];
@@ -22,20 +24,31 @@ export class QuizComponent implements OnInit {
   alwaysShow = false;
   user = null;
 
-  constructor(private crud: CrudService, public dialog: MatDialog) {
-    this.questions = crud.getQuestions();
-    this.shuffledQs = crud.getShuffled();
-    this.categories = crud.getCategories();
-    this.initSkipMap();
-  }
+  authObs;
+
+  constructor(private crud: CrudService, public dialog: MatDialog, public authService: AuthenticationService) {}
 
   ngOnInit() {
-    if (localStorage.getItem('user')) {
-      this.user = JSON.parse(localStorage.getItem('user'));
-      this.syncPreferencesFromDB();
-    } else {
-      this.user = null;
-    }
+    this.questions = this.crud.getQuestions();
+    this.shuffledQs = this.crud.getShuffled();
+    this.categories = this.crud.getCategories();
+    this.initSkipMap();
+    this.syncPreferencesFromDB();
+    this.authObs = this.authService.getAuthStateObservable().subscribe(user => {
+      if (user) {
+        this.user = user;
+        localStorage.setItem('user', JSON.stringify(this.user));
+        console.log('[Quiz] Set LS User: ' + this.user.uid);
+      } else {
+        this.user = null;
+        localStorage.removeItem('user');
+        console.log('[Quiz] Removed user');
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.authObs.unsubscribe();
   }
 
   shuffle(): void {
@@ -108,14 +121,13 @@ export class QuizComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       this.alwaysShow = dialogRef.componentInstance.data.alwaysShow;
-      if (this.user) {
-        this.syncPreferencesToDB();
-      }
+      this.syncPreferencesToDB();
     });
   }
 
   // updates preferences from the database
   syncPreferencesFromDB() {
+    console.log('Syncing preferences from crud');
     this.crud.getSkipCategories().forEach(element => {
       this.skipMap.set(element, true);
     });
@@ -124,13 +136,18 @@ export class QuizComponent implements OnInit {
 
   // writes preferences to database
   syncPreferencesToDB() {
+    console.log('sync to crud');
     const temp = [];
     this.skipMap.forEach((skip: boolean, category: string) => {
       if (skip) {
         temp.push(category);
       }
     });
-    this.crud.setPreferences(this.user.uid, temp, this.alwaysShow);
+    if (this.user === null) {
+      this.crud.setPreferences(null, temp, this.alwaysShow);
+    } else {
+      this.crud.setPreferences(this.user.uid, temp, this.alwaysShow);
+    }
   }
 }
 

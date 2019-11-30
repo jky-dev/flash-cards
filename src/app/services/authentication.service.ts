@@ -15,8 +15,8 @@ export class AuthenticationService {
         localStorage.setItem('user', JSON.stringify(this.userState));
         console.log('[Auth] Set LS User: ' + this.userState.uid);
       } else {
-        localStorage.setItem('user', null);
-        console.log('[Auth] Set LS User to null');
+        localStorage.removeItem('user');
+        console.log('[Auth] Removed user');
       }
     });
   }
