@@ -16,7 +16,7 @@
             <span>
               {{question.question.endsWith('?') ? [question.question] : [question.question] + '?'}}
             </span>
-            <mat-icon class="correct" *ngIf="question.correct">check</mat-icon>
+            <mat-icon class="correct" *ngIf="question.correct">check_circle</mat-icon>
           </h3>
           <p>{{question.answer}}</p>
         </div>

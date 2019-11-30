@@ -21,13 +21,14 @@ export class LandingComponent implements OnInit, OnDestroy {
       if (user) {
         this.signedIn = true;
         this.user = JSON.parse(localStorage.getItem('user'));
+        crud.initPreferences();
+        crud.initCorrectQuestions();
       } else {
         this.signedIn = false;
         this.user = null;
         localStorage.removeItem('user');
+        crud.signedOut();
       }
-      crud.initPreferences();
-      crud.initCorrectQuestions();
     });
   }
 

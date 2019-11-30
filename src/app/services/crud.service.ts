@@ -83,6 +83,7 @@ export class CrudService {
       this.user = JSON.parse(localStorage.getItem('user'));
       this.db.database.ref('users/' + this.user.uid + '/correctQs/questions').on('value', (snapshot: DataSnapshot) => {
         this.correctQuestions = new Set();
+        this.correctQuestionsMap.clear();
         snapshot.forEach(element => {
           this.correctQuestions.add(element.val());
           const split = element.val().split('__');

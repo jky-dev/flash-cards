@@ -14,11 +14,6 @@ b:hover {
   width: 100%;
 }
 
-mat-icon {
-  font-family: 'Material Icons' !important;
-  vertical-align: middle;
-}
-
 mat-card {
   margin-bottom: 1rem;
 }
