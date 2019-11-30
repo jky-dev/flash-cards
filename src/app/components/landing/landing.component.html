@@ -4,9 +4,14 @@
       <div>
         <h1 class="mat-display-2 logo">OptomCards</h1>
       </div>
+      <div>
+        <h2 class="mat-headline" *ngIf="user">Welcome back {{user.displayName}}</h2>
+      </div>
       <div *ngIf="ready" fxLayout="column" fxLayoutAlign="space-around center" fxLayoutGap="1rem">
         <button mat-button routerLink="/quiz" class="link">Begin</button>
         <button mat-button routerLink="/all" class="link">View All Questions</button>
+        <button *ngIf="!signedIn" mat-button (click)="login()">Login</button>
+        <button *ngIf="signedIn" mat-button (click)="signOut()">Sign Out</button>
       </div>
       <p *ngIf="!ready">Fetching all questions...</p>
     </div>

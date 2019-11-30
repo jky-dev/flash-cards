@@ -14,6 +14,8 @@ import { AllQuestionsComponent } from './components/all-questions/all-questions.
 import { MatButtonModule, MatCheckboxModule, MatDialogModule, MatIconModule, MatCardModule, MatExpansionModule } from '@angular/material';
 import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { AuthenticationService } from './services/authentication.service';
+import { AngularFireAuthModule } from '@angular/fire/auth';
 
 @NgModule({
   declarations: [
@@ -37,9 +39,10 @@ import { FlexLayoutModule } from '@angular/flex-layout';
     MatIconModule,
     FlexLayoutModule,
     MatCardModule,
-    MatExpansionModule
+    MatExpansionModule,
+    AngularFireAuthModule
   ],
-  providers: [],
+  providers: [AuthenticationService],
   bootstrap: [AppComponent],
   entryComponents: [PreferencesDialog]
 })

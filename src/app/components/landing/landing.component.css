@@ -14,3 +14,7 @@ mat-card {
 .link :hover {
   cursor: pointer !important;
 }
+
+.mat-headline {
+  padding-bottom: 2rem !important;
+}
