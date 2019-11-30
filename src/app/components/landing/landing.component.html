@@ -1,10 +1,14 @@
 <div class="landing-container" fxLayout="column" fxLayoutAlign="center center">
-  <div>
-    <h1 class="mat-display-2 logo">OptomCards</h1>
-  </div>
-  <div *ngIf="ready">
-    <h2 routerLink="/quiz">Begin</h2>
-    <h2 routerLink="/all">View All Questions</h2>
-  </div>
-  <p *ngIf="!ready">Fetching all questions...</p>
+  <mat-card>
+    <div class="card-container">
+      <div>
+        <h1 class="mat-display-2 logo">OptomCards</h1>
+      </div>
+      <div *ngIf="ready" fxLayout="column" fxLayoutAlign="space-around center" fxLayoutGap="1rem">
+        <button mat-button routerLink="/quiz" class="link">Begin</button>
+        <button mat-button routerLink="/all" class="link">View All Questions</button>
+      </div>
+      <p *ngIf="!ready">Fetching all questions...</p>
+    </div>
+  </mat-card>
 </div>

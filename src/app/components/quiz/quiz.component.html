@@ -1,10 +1,14 @@
 <div class="quiz-container" fxLayout="column" fxLayoutAlign="space-between center" fxLayoutAlign.gt-xs="start center">
   <div>
     <h2 fxLayout="row" fxLayoutAlign="space-between center">
-      <span routerLink="/"><b class="logo">OptomCards</b> - {{currentIndex + 1}}/{{shuffledQs.length}}</span>
+      <span><b mat-button class="logo" routerLink="/">OptomCards</b> - {{currentIndex + 1}}/{{shuffledQs.length}}</span>
       <span>
-        <mat-icon (click)="reset()">refresh</mat-icon>
-        <mat-icon (click)="openDialog()">more_vert</mat-icon>
+        <button mat-icon-button (click)="reset()">
+          <mat-icon>refresh</mat-icon>
+        </button>
+        <button mat-icon-button (click)="openDialog()">
+          <mat-icon>more_vert</mat-icon>
+        </button>
       </span>
     </h2>
   </div>

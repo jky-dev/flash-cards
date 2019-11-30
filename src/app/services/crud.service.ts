@@ -91,4 +91,8 @@ export class CrudService {
     }
     return this.map;
   }
+
+  getTotalQuestions() {
+    return this.questions.length;
+  }
 }

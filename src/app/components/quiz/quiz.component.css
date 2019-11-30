@@ -5,13 +5,17 @@
   margin: auto;
 }
 
+b:hover {
+  cursor: pointer !important;
+  text-shadow: 2px 2px 5px rgb(109, 105, 105);
+}
+
 .quiz-container > div {
   width: 100%;
 }
 
 mat-icon {
   font-family: 'Material Icons' !important;
-  margin-left: 1rem;
   vertical-align: middle;
 }
 
@@ -19,7 +23,7 @@ mat-card {
   margin-bottom: 1rem;
 }
 
-button {
+.quiz-buttons > div > button {
   margin: 0 1rem;
 }
 

@@ -3,6 +3,14 @@
 }
 
 .landing-container {
-  padding: 2rem;
+  padding: 2rem !important;
   height: 100%;
+}
+
+mat-card {
+  padding: 2rem !important;
+}
+
+.link :hover {
+  cursor: pointer !important;
 }
