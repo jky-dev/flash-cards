@@ -34,11 +34,11 @@ export class CrudService {
   }
 
   initQuestions() {
-    this.questions = [];
-    this.categories = [];
     // init questions
     console.log('loading questions from db');
     this.db.database.ref(this.questionsRefId).once('value').then((snapshot: DataSnapshot) => {
+      this.questions = [];
+      this.categories = [];
       snapshot.forEach(element => {
         element.val().forEach(q => {
           if (q.question.length === 0) {
@@ -106,8 +106,15 @@ export class CrudService {
   }
 
   signedOut() {
-    this.shuffledQs = [...this.questions];
-    this.shuffle();
+    this.skipCategories = [];
+    this.alwaysShowAnswer = false;
+    this.skipCorrectAnswers = false;
+    this.correctQuestions.clear();
+    this.user = null;
+    this.categories = [];
+    this.map.clear();
+    this.questions = [];
+    this.initQuestions();
   }
 
   shuffle() {
