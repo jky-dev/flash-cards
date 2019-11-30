@@ -14,6 +14,7 @@ export class CrudService {
   categories: string[] = [];
   skipCategories: string[] = [];
   alwaysShowAnswer = false;
+  skipCorrectAnswers = false;
   user = null;
   questionsLoaded = false;
   isReady: Subject<boolean> = new Subject();
@@ -73,6 +74,9 @@ export class CrudService {
       });
       this.db.database.ref('users/' + this.user.uid + '/preferences/showAnswer').on('value', (snapshot: DataSnapshot) => {
         this.alwaysShowAnswer = snapshot.val();
+      });
+      this.db.database.ref('users/' + this.user.uid + '/preferences/skipCorrect').on('value', (snapshot: DataSnapshot) => {
+        this.skipCorrectAnswers = snapshot.val();
       });
     }
   }
@@ -158,6 +162,10 @@ export class CrudService {
     return this.correctQuestionsMap;
   }
 
+  getSkipCorrectAnswers() {
+    return this.skipCorrectAnswers;
+  }
+
   // returns a map <category, question[]>
   getMap() {
     return this.map;
@@ -169,16 +177,18 @@ export class CrudService {
   }
 
   // writes quiz preferences to the database
-  setPreferences(uid: string, skip: string[], answer: boolean) {
+  setPreferences(uid: string, skip: string[], answer: boolean, skipCorrectAnswers: boolean) {
     if (uid === null) {
       console.log('setting locally');
       this.skipCategories = skip;
       this.alwaysShowAnswer = answer;
+      this.skipCorrectAnswers = skipCorrectAnswers;
     } else {
       console.log('setting preferences to db');
       this.db.database.ref('users/' + uid + '/preferences').set({
         categories : skip,
-        showAnswer : answer
+        showAnswer : answer,
+        skipCorrect : skipCorrectAnswers
       });
     }
   }

@@ -21,8 +21,12 @@ export class QuizComponent implements OnInit, OnDestroy {
   showAnswer = false;
   loaded = false;
   currentIndex = 0;
+
+  // Preferences
   skipMap = new Map<string, boolean>();
   alwaysShow = false;
+  skipCorrectQuestions = false;
+
   user = null;
   correctQuestions = new Set<string>();
 
@@ -100,11 +104,13 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   nextQuestion(): boolean {
-    let tempIndex = this.currentIndex;
-    while (this.skipMap.get(this.shuffledQs[++tempIndex].category)) {
+    let tempIndex = this.currentIndex + 1;
+    while (this.skipMap.get(this.shuffledQs[tempIndex].category) ||
+    this.shuffledQs[tempIndex].correct === true && this.skipCorrectQuestions) {
       if (tempIndex === this.shuffledQs.length - 1) {
         return false;
       }
+      tempIndex++;
     }
     this.currentIndex = tempIndex;
     this.showAnswer = false;
@@ -112,11 +118,13 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   previousQuestion(): boolean {
-    let tempIndex = this.currentIndex;
-    while (this.skipMap.get(this.shuffledQs[--tempIndex].category)) {
+    let tempIndex = this.currentIndex - 1;
+    while (this.skipMap.get(this.shuffledQs[tempIndex].category) ||
+    this.shuffledQs[tempIndex].correct === true && this.skipCorrectQuestions) {
       if (tempIndex === 0) {
         return false;
       }
+      tempIndex--;
     }
     this.currentIndex = tempIndex;
     this.showAnswer = false;
@@ -148,11 +156,12 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   openDialog() {
     const dialogRef = this.dialog.open(PreferencesDialog, {
-      data: { map: this.skipMap, alwaysShow: this.alwaysShow }
+      data: { map: this.skipMap, alwaysShow: this.alwaysShow, skipCorrectQuestions: this.skipCorrectQuestions }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       this.alwaysShow = dialogRef.componentInstance.data.alwaysShow;
+      this.skipCorrectQuestions = dialogRef.componentInstance.data.skipCorrectQuestions;
       this.syncPreferencesToDB();
     });
   }
@@ -164,6 +173,7 @@ export class QuizComponent implements OnInit, OnDestroy {
       this.skipMap.set(element, true);
     });
     this.alwaysShow = this.crud.getAlwaysShowAnswer();
+    this.skipCorrectQuestions = this.crud.getSkipCorrectAnswers();
   }
 
   // writes preferences to database
@@ -176,9 +186,9 @@ export class QuizComponent implements OnInit, OnDestroy {
       }
     });
     if (this.user === null) {
-      this.crud.setPreferences(null, temp, this.alwaysShow);
+      this.crud.setPreferences(null, temp, this.alwaysShow, this.skipCorrectQuestions);
     } else {
-      this.crud.setPreferences(this.user.uid, temp, this.alwaysShow);
+      this.crud.setPreferences(this.user.uid, temp, this.alwaysShow, this.skipCorrectQuestions);
     }
   }
 
