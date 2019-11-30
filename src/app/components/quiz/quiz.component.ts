@@ -20,6 +20,7 @@ export class QuizComponent implements OnInit {
   currentIndex = 0;
   skipMap = new Map<string, boolean>();
   alwaysShow = false;
+  user = null;
 
   constructor(private crud: CrudService, public dialog: MatDialog) {
     this.questions = crud.getQuestions();
@@ -28,7 +29,14 @@ export class QuizComponent implements OnInit {
     this.initSkipMap();
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    if (localStorage.getItem('user')) {
+      this.user = JSON.parse(localStorage.getItem('user'));
+      this.syncPreferencesFromDB();
+    } else {
+      this.user = null;
+    }
+  }
 
   shuffle(): void {
     if (this.shuffledQs.length !== this.questions.length) {
@@ -100,7 +108,29 @@ export class QuizComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       this.alwaysShow = dialogRef.componentInstance.data.alwaysShow;
+      if (this.user) {
+        this.syncPreferencesToDB();
+      }
     });
+  }
+
+  // updates preferences from the database
+  syncPreferencesFromDB() {
+    this.crud.getSkipCategories().forEach(element => {
+      this.skipMap.set(element, true);
+    });
+    this.alwaysShow = this.crud.getAlwaysShowAnswer();
+  }
+
+  // writes preferences to database
+  syncPreferencesToDB() {
+    const temp = [];
+    this.skipMap.forEach((skip: boolean, category: string) => {
+      if (skip) {
+        temp.push(category);
+      }
+    });
+    this.crud.setPreferences(this.user.uid, temp, this.alwaysShow);
   }
 }
 

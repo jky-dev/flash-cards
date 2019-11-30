@@ -11,15 +11,15 @@ export class CrudService {
   questions: Question[] = [];
   shuffledQs: Question[] = [];
   categories: string[] = [];
+  skipCategories: string[] = [];
+  alwaysShowAnswer = false;
+  user = null;
   loaded = false;
   isReady: Subject<boolean> = new Subject();
-  dbRef: firebase.database.Reference;
   map = new Map<string, Question[]>();
-  readonly refId: string = '1_Aa13LBY37FD_7KR1EznSZoNNxnt-MUBaAnUYrLie0w';
+  readonly questionsRefId: string = '1_Aa13LBY37FD_7KR1EznSZoNNxnt-MUBaAnUYrLie0w';
 
-  constructor(private db: AngularFireDatabase) {
-    this.dbRef = db.database.ref(this.refId);
-  }
+  constructor(private db: AngularFireDatabase) {}
 
   initialize() {
     if (this.loaded) {
@@ -28,7 +28,8 @@ export class CrudService {
     }
     this.questions = [];
     this.categories = [];
-    this.dbRef.once('value').then((snapshot: DataSnapshot) => {
+    // init questions
+    this.db.database.ref(this.questionsRefId).once('value').then((snapshot: DataSnapshot) => {
       snapshot.forEach(element => {
         element.val().forEach(q => {
           if (q.question.length === 0) {
@@ -40,6 +41,18 @@ export class CrudService {
         this.categories.push(element.key);
       });
       this.shuffle();
+    }).then(() => {
+      if (localStorage.getItem('user')) {
+        this.user = JSON.parse(localStorage.getItem('user'));
+        this.db.database.ref('users/' + this.user.uid + '/preferences/categories').once('value').then((snapshot: DataSnapshot) => {
+          snapshot.forEach(element => {
+            this.skipCategories.push(element.val());
+          });
+        });
+        this.db.database.ref('users/' + this.user.uid + '/preferences/showAnswer').once('value').then((snapshot: DataSnapshot) => {
+          this.alwaysShowAnswer = snapshot.val();
+        });
+      }
       this.loaded = true;
       this.isReady.next(this.loaded);
     });
@@ -81,6 +94,15 @@ export class CrudService {
     return this.categories;
   }
 
+  getSkipCategories() {
+    return this.skipCategories;
+  }
+
+  getAlwaysShowAnswer() {
+    return this.alwaysShowAnswer;
+  }
+
+  // returns a map <category, question[]>
   getMap() {
     if (this.map.size === 0) {
       this.questions.forEach((question: Question) => {
@@ -95,7 +117,19 @@ export class CrudService {
     return this.map;
   }
 
+  // gets the total amount of questions
   getTotalQuestions() {
     return this.questions.length;
+  }
+
+  // writes quiz preferences to the database
+  setPreferences(uid: string, skip: string[], showAnswer: boolean) {
+    // delete and then set
+    this.db.database.ref('users/' + uid + '/preferences').remove().then(() => {
+      this.db.database.ref('users/' + uid + '/preferences').set({
+        categories : skip,
+        showAnswer : showAnswer
+      });
+    });
   }
 }
