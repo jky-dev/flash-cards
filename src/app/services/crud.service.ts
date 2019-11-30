@@ -31,6 +31,9 @@ export class CrudService {
     this.dbRef.once('value').then((snapshot: DataSnapshot) => {
       snapshot.forEach(element => {
         element.val().forEach(q => {
+          if (q.question.length === 0) {
+            return;
+          }
           const question: Question = { category: element.key, question: q.question.trim(), answer: q.answer };
           this.questions.push(question);
         });
