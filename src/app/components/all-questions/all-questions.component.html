@@ -2,13 +2,20 @@
   <h2><b class="logo" routerLink="/">OptomCards</b> - {{totalQuestions}} Total Questions</h2>
   <div>
     <div *ngFor="let entry of map | keyvalue">
-      <mat-card>
-        <h1><b>{{entry.key}}</b></h1>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header fxLayout="row" fxLayoutAlign="space-between center">
+          <mat-panel-title fxFlex="40%">
+            <h1>{{entry.key}}</h1>
+          </mat-panel-title>
+          <mat-panel-description fxLayoutAlign="start center">
+            {{entry.value.length}} Questions
+          </mat-panel-description>
+        </mat-expansion-panel-header>
         <div *ngFor="let question of entry.value">
           <h2>{{question.question.endsWith('?') ? [question.question] : [question.question] + '?'}}</h2>
           <p>{{question.answer}}</p>
         </div>
-      </mat-card>
+      </mat-expansion-panel>
     </div>
   </div>
 </div>

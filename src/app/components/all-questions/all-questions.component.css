@@ -4,11 +4,20 @@
   margin: auto;
 }
 
-b:hover {
+.logo:hover {
   cursor: pointer;
   text-shadow: 2px 2px 5px rgb(109, 105, 105);
 }
 
-mat-card {
+mat-expansion-panel {
   margin-bottom: 1rem;
+}
+
+mat-panel-description {
+  vertical-align: middle !important;
+}
+
+mat-panel-title > h1 {
+  margin: 0px !important;
+  font-weight: bold;
 }

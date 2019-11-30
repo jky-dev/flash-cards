@@ -11,7 +11,7 @@ import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { environment } from 'src/environments/environment.prod';
 import { AllQuestionsComponent } from './components/all-questions/all-questions.component';
-import { MatButtonModule, MatCheckboxModule, MatDialogModule, MatIconModule, MatCardModule } from '@angular/material';
+import { MatButtonModule, MatCheckboxModule, MatDialogModule, MatIconModule, MatCardModule, MatExpansionModule } from '@angular/material';
 import { FormsModule } from '@angular/forms';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
@@ -36,7 +36,8 @@ import { FlexLayoutModule } from '@angular/flex-layout';
     BrowserAnimationsModule,
     MatIconModule,
     FlexLayoutModule,
-    MatCardModule
+    MatCardModule,
+    MatExpansionModule
   ],
   providers: [],
   bootstrap: [AppComponent],
