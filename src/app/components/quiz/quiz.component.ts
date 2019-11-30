@@ -2,7 +2,6 @@ import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import { Question } from 'src/question';
 import { CrudService } from 'src/app/services/crud.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { AngularFireAuth } from '@angular/fire/auth';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { Router } from '@angular/router';
 
@@ -21,6 +20,8 @@ export class QuizComponent implements OnInit, OnDestroy {
   showAnswer = false;
   loaded = false;
   currentIndex = 0;
+  displayIndex = 0;
+  displayLength = 0;
 
   // Preferences
   skipMap = new Map<string, boolean>();
@@ -55,9 +56,7 @@ export class QuizComponent implements OnInit, OnDestroy {
           console.log('[Quiz] Removed user');
         }
       });
-      if (this.skipMap.get(this.shuffledQs[0].category)) {
-        this.nextQuestion();
-      }
+      this.calculateDisplayIndexes(true);
     }
   }
 
@@ -81,6 +80,7 @@ export class QuizComponent implements OnInit, OnDestroy {
       array[length] = array[i];
       array[i] = temp;
     }
+    this.calculateDisplayIndexes(true);
   }
 
   markCorrect() {
@@ -90,6 +90,10 @@ export class QuizComponent implements OnInit, OnDestroy {
     } else {
       this.correctQuestions.add(this.shuffledQs[this.currentIndex].question + '__' + this.shuffledQs[this.currentIndex].category);
       this.syncCorrectAnswersToDB();
+      this.displayLength--;
+      if (this.displayIndex === 1 && this.displayLength === 0) {
+        this.displayIndex = 0;
+      }
     }
   }
 
@@ -97,10 +101,53 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.shuffledQs[this.currentIndex].correct = false;
     if (this.correctQuestions.delete(this.shuffledQs[this.currentIndex].question + '__' + this.shuffledQs[this.currentIndex].category)) {
       console.log('Deleted from correct set');
+      this.displayLength++;
       this.syncCorrectAnswersToDB();
     } else {
       console.log('Did not exist');
     }
+  }
+
+  calculateDisplayIndexes(justShuffled: boolean) {
+    let tempIndex = 0;
+    let totalQuestions = 0;
+    let firstActualIndex = -1;
+    let displayIndex = 0;
+    let findOriginalQuestion = false;
+    // if not part of a skip category, and is not correct with skip
+    if (!this.skipMap.get(this.shuffledQs[this.currentIndex].category) &&
+     !(this.shuffledQs[this.currentIndex].correct && this.skipCorrectQuestions)) {
+      findOriginalQuestion = true;
+    }
+    while (tempIndex !== this.shuffledQs.length) {
+      // if its skipped, dont add to total questions
+      if (this.skipMap.get(this.shuffledQs[tempIndex].category)) {
+        tempIndex++;
+        continue;
+      }
+
+      // question is not part of the skip categories
+      // add question to list if we are not skipping it due to being correct
+      if (!this.shuffledQs[tempIndex].correct || !this.skipCorrectQuestions) {
+        totalQuestions++;
+        if (findOriginalQuestion && !justShuffled) {
+          if (tempIndex <= this.currentIndex) {
+            displayIndex++;
+            firstActualIndex = tempIndex;
+          }
+        } else {
+          if (firstActualIndex === -1) {
+            firstActualIndex = tempIndex;
+            displayIndex = 1;
+          }
+        }
+
+      }
+      tempIndex++;
+    }
+    this.displayLength = totalQuestions;
+    this.displayIndex = displayIndex;
+    this.currentIndex = firstActualIndex === -1 ? 0 : firstActualIndex;
   }
 
   nextQuestion(): boolean {
@@ -111,6 +158,10 @@ export class QuizComponent implements OnInit, OnDestroy {
         return false;
       }
       tempIndex++;
+    }
+    // if it was marked correct, dont increment the display index, as we are decrementing the total quesitons left
+    if (!this.shuffledQs[this.currentIndex].correct || this.shuffledQs[this.currentIndex].correct && !this.skipCorrectQuestions) {
+      this.displayIndex++;
     }
     this.currentIndex = tempIndex;
     this.showAnswer = false;
@@ -127,6 +178,7 @@ export class QuizComponent implements OnInit, OnDestroy {
       tempIndex--;
     }
     this.currentIndex = tempIndex;
+    this.displayIndex--;
     this.showAnswer = false;
     return true;
   }
@@ -163,6 +215,7 @@ export class QuizComponent implements OnInit, OnDestroy {
       this.alwaysShow = dialogRef.componentInstance.data.alwaysShow;
       this.skipCorrectQuestions = dialogRef.componentInstance.data.skipCorrectQuestions;
       this.syncPreferencesToDB();
+      this.calculateDisplayIndexes(false);
     });
   }
 

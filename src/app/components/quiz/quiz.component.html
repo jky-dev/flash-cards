@@ -3,7 +3,7 @@
     <h2 fxLayout="row" fxLayoutAlign="space-between center">
       <span>
         <b class="logo" routerLink="/">OptomCards</b>
-        - {{currentIndex + 1}}/{{shuffledQs.length}}
+        - {{displayIndex}}/{{displayLength}}
       </span>
       <span>
         <button mat-icon-button (click)="reset()">
@@ -17,7 +17,7 @@
   </div>
   <div class="quiz-body" fxFlex fxFlex.gt-xs="30%">
     <mat-card fxFlex>
-      <div class="card-container" fxLayout="column" fxLayoutAlign="space-between stretch">
+      <div *ngIf="displayLength !== 0" class="card-container" fxLayout="column" fxLayoutAlign="space-between stretch">
         <div fxFlex>
           <h3 class="category" fxLayout="row" fxLayoutAlign="space-between center">
             <span fxFlex>
@@ -40,13 +40,16 @@
           </button>
         </div>
       </div>
+      <div *ngIf="displayLength === 0" fxLayout="row" fxFlexLayout="center center">
+        <h1 fxFlex>No more questions left! Change the preferences to get new questions and continue on :)</h1>
+      </div>
     </mat-card>
   </div>
   <div class="quiz-buttons">
     <div fxLayout="row" fxLayoutAlign="center center">
-      <button mat-raised-button [disabled]="currentIndex === 0" (click)="previousQuestion()">Back</button>
+      <button mat-raised-button [disabled]="displayIndex === 1 || displayIndex === 0" (click)="previousQuestion()">Back</button>
       <button id="hideShowButton" mat-raised-button (click)="toggleShowAnswer()">{{showAnswer ? 'Hide' : 'Check'}}</button>
-      <button mat-raised-button [disabled]="currentIndex === shuffledQs.length - 1" (click)="nextQuestion()">Next</button>
+      <button mat-raised-button [disabled]="displayIndex >= displayLength || displayLength === 0" (click)="nextQuestion()">Next</button>
     </div>
   </div>
 </div>
