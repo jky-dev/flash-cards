@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Question } from 'src/question';
 import { CrudService } from 'src/app/services/crud.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-all-questions',
@@ -10,12 +11,33 @@ import { CrudService } from 'src/app/services/crud.service';
 export class AllQuestionsComponent implements OnInit {
   map = new Map<string, Question[]>();
   totalQuestions: number;
-  constructor(private crud: CrudService) {
+  correctMap: Map<string, Set<string>>;
+  constructor(private crud: CrudService, private router: Router) {
     this.map = crud.getMap();
+    this.correctMap = crud.getCorrectQuestionsMap();
     this.totalQuestions = crud.getTotalQuestions();
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    if (this.totalQuestions === 0) {
+      this.router.navigateByUrl('/');
+    }
+    this.syncCorrectness();
+  }
 
+  syncCorrectness() {
+    this.map.forEach((questions, category, map) => {
+      questions.forEach((question) => {
+        if (this.correctMap.has(category)) {
+          if (this.correctMap.get(category).has(question.question)) {
+            question.correct = true;
+          }
+        } else {
+          // add empty set to correctmap so we can count total correct q's later
+          this.correctMap.set(category, new Set<string>());
+        }
+      });
+    });
+  }
 
 }

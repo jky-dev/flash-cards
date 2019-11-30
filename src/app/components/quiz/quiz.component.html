@@ -1,4 +1,4 @@
-<div class="quiz-container" fxLayout="column" fxLayoutAlign="space-between center" fxLayoutAlign.gt-xs="start center">
+<div *ngIf="shuffledQs.length !== 0" class="quiz-container" fxLayout="column" fxLayoutAlign="space-between center" fxLayoutAlign.gt-xs="start center">
   <div>
     <h2 fxLayout="row" fxLayoutAlign="space-between center">
       <span>
@@ -17,11 +17,29 @@
   </div>
   <div class="quiz-body" fxFlex fxFlex.gt-xs="30%">
     <mat-card fxFlex>
-      <h3 class="category"><i>{{shuffledQs[currentIndex].category}}</i></h3>
-      <h2 class="question">
-        {{shuffledQs[currentIndex].question.endsWith('?') ? [shuffledQs[currentIndex].question] : [shuffledQs[currentIndex].question] + '?'}}
-      </h2>
-      <h3 class="answer" *ngIf="showAnswer || alwaysShow">{{shuffledQs[currentIndex].answer}}</h3>
+      <div class="card-container" fxLayout="column" fxLayoutAlign="space-between stretch">
+        <div fxFlex>
+          <h3 class="category" fxLayout="row" fxLayoutAlign="space-between center">
+            <span fxFlex>
+              <i>{{shuffledQs[currentIndex].category}}</i>
+            </span>
+            <mat-icon *ngIf="shuffledQs[currentIndex].correct" class="correct">check</mat-icon>
+            <mat-icon *ngIf="!shuffledQs[currentIndex].correct" class="incorrect">close</mat-icon>
+          </h3>
+          <h2 class="question">
+            {{shuffledQs[currentIndex].question.endsWith('?') ? [shuffledQs[currentIndex].question] : [shuffledQs[currentIndex].question] + '?'}}
+          </h2>
+          <h3 class="answer" *ngIf="showAnswer || alwaysShow">{{shuffledQs[currentIndex].answer}}</h3>
+        </div>
+        <div *ngIf="showAnswer || alwaysShow" fxLayout="row" fxLayoutAlign="space-evenly center">
+          <button mat-icon-button mat-raised-button (click)="markCorrect()">
+            <mat-icon>check</mat-icon>
+          </button>
+          <button mat-icon-button mat-raised-button (click)="markIncorrect()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
     </mat-card>
   </div>
   <div class="quiz-buttons">

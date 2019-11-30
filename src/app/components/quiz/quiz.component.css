@@ -31,5 +31,14 @@ mat-card {
   width: 71.35px;
 }
 
+.incorrect {
+  color: red;
+}
 
+.correct {
+  color: green;
+}
 
+.card-container {
+  height: 100%;
+}

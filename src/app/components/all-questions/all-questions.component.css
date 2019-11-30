@@ -21,3 +21,7 @@ mat-panel-title > h2 {
   margin: 0px !important;
   font-weight: bold;
 }
+
+.correct {
+  color: green;
+}

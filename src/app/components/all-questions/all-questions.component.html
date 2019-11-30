@@ -8,11 +8,16 @@
             <h2>{{entry.key}}</h2>
           </mat-panel-title>
           <mat-panel-description fxLayoutAlign="start center">
-            {{entry.value.length}} Qns
+              {{correctMap.get(entry.key).size}}/{{entry.value.length}}  Qns
           </mat-panel-description>
         </mat-expansion-panel-header>
         <div *ngFor="let question of entry.value">
-          <h3>{{question.question.endsWith('?') ? [question.question] : [question.question] + '?'}}</h3>
+          <h3 fxLayout="row" fxLayoutAlign="space-between center">
+            <span>
+              {{question.question.endsWith('?') ? [question.question] : [question.question] + '?'}}
+            </span>
+            <mat-icon class="correct" *ngIf="question.correct">check</mat-icon>
+          </h3>
           <p>{{question.answer}}</p>
         </div>
       </mat-expansion-panel>

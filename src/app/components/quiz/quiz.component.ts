@@ -4,6 +4,7 @@ import { CrudService } from 'src/app/services/crud.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AuthenticationService } from 'src/app/services/authentication.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-quiz',
@@ -23,32 +24,43 @@ export class QuizComponent implements OnInit, OnDestroy {
   skipMap = new Map<string, boolean>();
   alwaysShow = false;
   user = null;
+  correctQuestions = new Set<string>();
 
   authObs;
 
-  constructor(private crud: CrudService, public dialog: MatDialog, public authService: AuthenticationService) {}
+  constructor(private crud: CrudService, private dialog: MatDialog, private authService: AuthenticationService, private router: Router) {}
 
   ngOnInit() {
-    this.questions = this.crud.getQuestions();
-    this.shuffledQs = this.crud.getShuffled();
-    this.categories = this.crud.getCategories();
-    this.initSkipMap();
-    this.syncPreferencesFromDB();
-    this.authObs = this.authService.getAuthStateObservable().subscribe(user => {
-      if (user) {
-        this.user = user;
-        localStorage.setItem('user', JSON.stringify(this.user));
-        console.log('[Quiz] Set LS User: ' + this.user.uid);
-      } else {
-        this.user = null;
-        localStorage.removeItem('user');
-        console.log('[Quiz] Removed user');
+    if (!this.crud.questionsLoaded) {
+      this.router.navigateByUrl('/');
+    } else {
+      this.questions = this.crud.getQuestions();
+      this.shuffledQs = this.crud.getShuffled();
+      this.categories = this.crud.getCategories();
+      this.initSkipMap();
+      this.syncPreferencesFromDB();
+      this.syncCorrectAnswersFromDB();
+      this.authObs = this.authService.getAuthStateObservable().subscribe(user => {
+        if (user) {
+          this.user = user;
+          localStorage.setItem('user', JSON.stringify(this.user));
+          console.log('[Quiz] Set LS User: ' + this.user.uid);
+        } else {
+          this.user = null;
+          localStorage.removeItem('user');
+          console.log('[Quiz] Removed user');
+        }
+      });
+      if (this.skipMap.get(this.shuffledQs[0].category)) {
+        this.nextQuestion();
       }
-    });
+    }
   }
 
   ngOnDestroy() {
-    this.authObs.unsubscribe();
+    if (this.authObs) {
+      this.authObs.unsubscribe();
+    }
   }
 
   shuffle(): void {
@@ -64,6 +76,26 @@ export class QuizComponent implements OnInit, OnDestroy {
       temp = array[length];
       array[length] = array[i];
       array[i] = temp;
+    }
+  }
+
+  markCorrect() {
+    this.shuffledQs[this.currentIndex].correct = true;
+    if (this.correctQuestions.has(this.shuffledQs[this.currentIndex].question + '__' + this.shuffledQs[this.currentIndex].category)) {
+      console.log('already exists');
+    } else {
+      this.correctQuestions.add(this.shuffledQs[this.currentIndex].question + '__' + this.shuffledQs[this.currentIndex].category);
+      this.syncCorrectAnswersToDB();
+    }
+  }
+
+  markIncorrect() {
+    this.shuffledQs[this.currentIndex].correct = false;
+    if (this.correctQuestions.delete(this.shuffledQs[this.currentIndex].question + '__' + this.shuffledQs[this.currentIndex].category)) {
+      console.log('Deleted from correct set');
+      this.syncCorrectAnswersToDB();
+    } else {
+      console.log('Did not exist');
     }
   }
 
@@ -149,6 +181,29 @@ export class QuizComponent implements OnInit, OnDestroy {
       this.crud.setPreferences(this.user.uid, temp, this.alwaysShow);
     }
   }
+
+  // syncs correct questions to our shuffled list
+  syncCorrectAnswersFromDB() {
+    console.log('Syncing answers from crud');
+    this.correctQuestions = this.crud.getCorrectQuestions();
+    this.shuffledQs.forEach(question => {
+      if (this.correctQuestions.has(question.question + '__' + question.category)) {
+        question.correct = true;
+      }
+    });
+  }
+
+  // syncs correct questions to our shuffled list
+  syncCorrectAnswersToDB() {
+    console.log('Syncing answers to crud');
+    if (this.user === null) {
+      console.log('not logged in');
+      this.crud.setCorrectQuestions(null, this.correctQuestions);
+    } else {
+      console.log('logged in ' + this.user.uid);
+      this.crud.setCorrectQuestions(this.user.uid, this.correctQuestions);
+    }
+  }
 }
 
 @Component({
@@ -164,8 +219,8 @@ export class PreferencesDialog {
     public dialogRef: MatDialogRef<PreferencesDialog>,
     @Inject(MAT_DIALOG_DATA) public data: any) {}
 
-    // ngModel didnt like to work so using this
-    updateCheck(category: string): void {
-      this.data.map.set(category, !this.data.map.get(category));
-    }
+  // ngModel didnt like to work so using this
+  updateCheck(category: string): void {
+    this.data.map.set(category, !this.data.map.get(category));
+  }
 }
