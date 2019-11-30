@@ -13,3 +13,7 @@ html, body {
   height: 100%;
   margin: 0;
 }
+
+.logo:focus {
+  outline: 0 !important;
+}
