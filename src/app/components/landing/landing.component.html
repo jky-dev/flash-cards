@@ -5,7 +5,7 @@
         <h1 class="mat-display-2 logo">OptomCards</h1>
       </div>
       <div>
-        <h2 class="mat-headline" *ngIf="user">Welcome back {{user.displayName}}</h2>
+        <h2 class="mat-headline" *ngIf="user">Welcome back<br>{{user.displayName}}</h2>
       </div>
       <div *ngIf="ready" fxLayout="column" fxLayoutAlign="space-around center" fxLayoutGap="1rem">
         <button mat-button routerLink="/quiz" class="link">Begin</button>

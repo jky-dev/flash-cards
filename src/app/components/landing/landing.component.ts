@@ -60,8 +60,8 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   signOut() {
     this.logger.debug(this.loggerString, 'Sign out');
+    this.crud.signedOut();
     this.authService.SignOut();
     localStorage.removeItem('user');
-    this.crud.signedOut();
   }
 }

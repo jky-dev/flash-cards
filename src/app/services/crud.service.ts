@@ -133,6 +133,10 @@ export class CrudService {
 
   signedOut() {
     this.logger.debug(this.loggerString, 'Signed out');
+    this.db.database.ref('users/' + this.user.uid + '/correctQs/questions').off();
+    this.db.database.ref('users/' + this.user.uid + '/preferences/categories').off();
+    this.db.database.ref('users/' + this.user.uid + '/preferences/showAnswer').off();
+    this.db.database.ref('users/' + this.user.uid + '/preferences/skipCorrect').off();
     this.skipCategories = [];
     this.alwaysShowAnswer = false;
     this.skipCorrectAnswers = false;
