@@ -6,10 +6,12 @@
         - {{displayIndex}}/{{displayLength}}
       </span>
       <span>
-        <button mat-icon-button (click)="reset()">
+        <button mat-icon-button (click)="reset()"
+          matTooltip="Shuffles current questions">
           <mat-icon>refresh</mat-icon>
         </button>
-        <button mat-icon-button (click)="openDialog()">
+        <button mat-icon-button (click)="openDialog()"
+          matTooltip="Settings">
           <mat-icon>more_vert</mat-icon>
         </button>
       </span>

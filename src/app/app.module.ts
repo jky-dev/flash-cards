@@ -21,6 +21,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @NgModule({
   declarations: [
@@ -46,6 +47,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatDialogModule,
     MatExpansionModule,
     MatIconModule,
+    MatTooltipModule
   ],
   bootstrap: [AppComponent],
   entryComponents: [PreferencesDialog]
