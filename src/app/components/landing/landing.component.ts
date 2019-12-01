@@ -72,15 +72,21 @@ export class LandingComponent implements OnInit, OnDestroy {
 
   openFeedback() {
     this.logger.debug(this.loggerString, 'Opening feedback');
-    const dialogRef = this.dialog.open(FeedbackDialog);
+    const dialogRef = this.dialog.open(FeedbackDialog, {
+      restoreFocus: false
+    });
 
     dialogRef.afterClosed().subscribe(result => {
       console.log(result);
       if (result) {
         this.crud.submitFeedback(result);
-        this.snackbar.open('Feedback submitted!', 'Close');
+        this.snackbar.open('Feedback submitted!', 'Dismiss', {
+          duration: 1000
+        });
       } else {
-        this.snackbar.open('Feedback was not submitted', 'Close');
+        this.snackbar.open('Feedback was not submitted', 'Dismiss', {
+          duration: 1000
+        });
       }
       this.logger.debug(this.loggerString, 'Closed feedback');
     });

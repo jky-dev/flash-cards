@@ -60,7 +60,9 @@ export class QuizComponent implements OnInit, OnDestroy {
           this.logger.debug(this.loggerString, 'No user');
           this.user = null;
           localStorage.removeItem('user');
-          this.snackbar.open('Make sure to log in to save your progress', 'Dismiss');
+          this.snackbar.open('Make sure to log in to save your progress', 'Dismiss', {
+            duration: 2000
+          });
         }
       });
       this.logger.debug(this.loggerString, 'Init');
@@ -264,7 +266,8 @@ export class QuizComponent implements OnInit, OnDestroy {
   openDialog() {
     this.logger.debug(this.loggerString, 'Opening settings');
     const dialogRef = this.dialog.open(PreferencesDialog, {
-      data: { map: this.skipMap, alwaysShow: this.alwaysShow, skipCorrectQuestions: this.skipCorrectQuestions }
+      data: { map: this.skipMap, alwaysShow: this.alwaysShow, skipCorrectQuestions: this.skipCorrectQuestions },
+      restoreFocus: false
     });
 
     dialogRef.afterClosed().subscribe(result => {

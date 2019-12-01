@@ -14,7 +14,8 @@ export class FeedbackDialog {
     public dialogRef: MatDialogRef<FeedbackDialog>) {}
 
   submit() {
-    let array = [this.name, this.email, this.feedback];
+    let array = [this.name, this.email, this.feedback,
+      new Date().toLocaleString('en-US', { timeZone: "Australia/Sydney" })];
     if (this.feedback !== '') {
       this.dialogRef.close(array);
     } else {
