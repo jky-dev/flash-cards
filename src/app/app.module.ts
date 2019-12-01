@@ -5,6 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { LandingComponent } from './components/landing/landing.component';
 import { QuizComponent, PreferencesDialog } from './components/quiz/quiz.component';
 import { AllQuestionsComponent } from './components/all-questions/all-questions.component';
+import { FeedbackDialog } from './components/feedback/feedback.dialog';
 import { environment } from 'src/environments/environment';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -21,7 +22,10 @@ import { MatCardModule} from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 
@@ -31,7 +35,8 @@ import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
     LandingComponent,
     QuizComponent,
     AllQuestionsComponent,
-    PreferencesDialog
+    PreferencesDialog,
+    FeedbackDialog
   ],
   imports: [
     BrowserModule,
@@ -52,10 +57,13 @@ import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
     MatCheckboxModule,
     MatDialogModule,
     MatExpansionModule,
+    MatFormFieldModule,
     MatIconModule,
+    MatInputModule,
+    MatSnackBarModule,
     MatTooltipModule
   ],
   bootstrap: [AppComponent],
-  entryComponents: [PreferencesDialog]
+  entryComponents: [PreferencesDialog, FeedbackDialog]
 })
 export class AppModule { }

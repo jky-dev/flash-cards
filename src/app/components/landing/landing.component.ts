@@ -3,6 +3,9 @@ import { CrudService } from 'src/app/services/crud.service';
 import { Observer, Subscription } from 'rxjs';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { NGXLogger } from 'ngx-logger';
+import { MatDialog } from '@angular/material/dialog';
+import { FeedbackDialog } from '../feedback/feedback.dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-landing',
@@ -20,7 +23,9 @@ export class LandingComponent implements OnInit, OnDestroy {
   constructor(
     private crud: CrudService,
     public authService: AuthenticationService,
-    private logger: NGXLogger) {
+    private logger: NGXLogger,
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar) {
     this.logger.debug(this.loggerString, 'Constructing landing page');
     crud.initialize();
     this.authObserver = authService.getAuthStateObservable().subscribe(user => {
@@ -63,5 +68,21 @@ export class LandingComponent implements OnInit, OnDestroy {
     this.crud.signedOut();
     this.authService.SignOut();
     localStorage.removeItem('user');
+  }
+
+  openFeedback() {
+    this.logger.debug(this.loggerString, 'Opening feedback');
+    const dialogRef = this.dialog.open(FeedbackDialog);
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(result);
+      if (result) {
+        this.crud.submitFeedback(result);
+        this.snackbar.open('Feedback submitted!', 'Close');
+      } else {
+        this.snackbar.open('Feedback was not submitted', 'Close');
+      }
+      this.logger.debug(this.loggerString, 'Closed feedback');
+    });
   }
 }

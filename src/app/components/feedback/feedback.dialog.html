@@ -1,0 +1,15 @@
+<div>
+  <h1 mat-dialog-title>Feedback</h1>
+  <p>Let me know of any feedback you have! All feedback is anonymous.</p>
+  <mat-form-field>
+    <input matInput [(ngModel)]="name" placeholder="Name (optional)">
+  </mat-form-field>
+  <mat-form-field>
+    <input matInput [(ngModel)]="email" placeholder="Email (optional)">
+  </mat-form-field>
+  <mat-form-field>
+    <textarea matInput [(ngModel)]="feedback" placeholder="Enter your feedback here"></textarea>
+  </mat-form-field>
+  <br>
+  <button mat-raised-button (click)=submit()>Submit!</button>    
+</div>

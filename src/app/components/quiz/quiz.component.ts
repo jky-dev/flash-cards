@@ -5,6 +5,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dial
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-quiz',
@@ -41,7 +42,8 @@ export class QuizComponent implements OnInit, OnDestroy {
     private dialog: MatDialog, 
     private authService: AuthenticationService, 
     private router: Router,
-    private logger: NGXLogger) {}
+    private logger: NGXLogger,
+    private snackbar: MatSnackBar) {}
 
   ngOnInit() {
     if (!this.crud.questionsLoaded) {
@@ -57,6 +59,7 @@ export class QuizComponent implements OnInit, OnDestroy {
           this.logger.debug(this.loggerString, 'No user');
           this.user = null;
           localStorage.removeItem('user');
+          this.snackbar.open('Make sure to log in to save your progress', 'Dismiss');
         }
       });
       this.logger.debug(this.loggerString, 'Init');

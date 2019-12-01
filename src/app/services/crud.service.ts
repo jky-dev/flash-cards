@@ -254,4 +254,8 @@ export class CrudService {
       });
     }
   }
+
+  submitFeedback(feedback: string[]) {
+    this.db.database.ref('feedback').push(feedback);
+  }
 }
