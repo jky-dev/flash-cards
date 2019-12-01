@@ -47,9 +47,9 @@
   </div>
   <div class="quiz-buttons">
     <div fxLayout="row" fxLayoutAlign="center center">
-      <button mat-raised-button [disabled]="displayIndex === 1 || displayIndex === 0" (click)="previousQuestion()">Back</button>
+      <button mat-raised-button [disabled]="disablePrevButton()" (click)="previousQuestion()">Back</button>
       <button id="hideShowButton" mat-raised-button (click)="toggleShowAnswer()">{{showAnswer ? 'Hide' : 'Check'}}</button>
-      <button mat-raised-button [disabled]="displayIndex >= displayLength || displayLength === 0" (click)="nextQuestion()">Next</button>
+      <button mat-raised-button [disabled]="disableNextButton()" (click)="nextQuestion()">Next</button>
     </div>
   </div>
 </div>

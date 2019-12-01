@@ -85,6 +85,34 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.calculateDisplayIndexes(true);
   }
 
+  disableNextButton() {
+    if (this.displayLength === 0) {
+      return true;
+    }
+
+    if (this.displayIndex > this.displayLength) {
+      return true;
+    }
+
+    // for the case where its the second last question (e.g. 1/2), and we mark it correct
+    // it becomes 1/1 but theres another question ahead
+    if (this.displayIndex === this.displayLength) {
+      if (this.skipCorrectQuestions && this.shuffledQs[this.currentIndex].correct) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  disablePrevButton() {
+    if (this.displayIndex === 1 || this.displayIndex === 0) {
+      return true;
+    }
+    return false;
+  }
+
   markCorrect() {
     this.shuffledQs[this.currentIndex].correct = true;
     if (this.correctQuestions.has(this.shuffledQs[this.currentIndex].question + '__' + this.shuffledQs[this.currentIndex].category)) {
