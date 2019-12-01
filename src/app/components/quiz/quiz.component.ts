@@ -1,11 +1,12 @@
 import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
 import { Question } from 'src/question';
 import { CrudService } from 'src/app/services/crud.service';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { PreferencesDialog } from './preferences/preferences.dialog';
 
 @Component({
   selector: 'app-quiz',
@@ -321,24 +322,5 @@ export class QuizComponent implements OnInit, OnDestroy {
     } else {
       this.crud.setCorrectQuestions(this.user.uid, this.correctQuestions);
     }
-  }
-}
-
-@Component({
-  // tslint:disable-next-line: component-selector
-  selector: 'preferences-dialog',
-  templateUrl: './preferences.dialog.html',
-  styleUrls: ['./preferences.dialog.css']
-})
-// tslint:disable-next-line: component-class-suffix
-export class PreferencesDialog {
-
-  constructor(
-    public dialogRef: MatDialogRef<PreferencesDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: any) {}
-
-  // ngModel didnt like to work so using this
-  updateCheck(category: string): void {
-    this.data.map.set(category, !this.data.map.get(category));
   }
 }

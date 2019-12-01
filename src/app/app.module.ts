@@ -3,7 +3,8 @@ import { NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { LandingComponent } from './components/landing/landing.component';
-import { QuizComponent, PreferencesDialog } from './components/quiz/quiz.component';
+import { QuizComponent } from './components/quiz/quiz.component';
+import { PreferencesDialog } from './components/quiz/preferences/preferences.dialog';
 import { AllQuestionsComponent } from './components/all-questions/all-questions.component';
 import { FeedbackDialog } from './components/feedback/feedback.dialog';
 import { environment } from 'src/environments/environment';
