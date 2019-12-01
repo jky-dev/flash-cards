@@ -19,15 +19,16 @@ export class LandingComponent implements OnInit, OnDestroy {
     crud.initialize();
     this.authObserver = authService.getAuthStateObservable().subscribe(user => {
       if (user) {
+        console.log('landing got user');
         this.signedIn = true;
         this.user = JSON.parse(localStorage.getItem('user'));
         crud.initPreferences();
         crud.initCorrectQuestions();
       } else {
+        console.log('landing no user');
         this.signedIn = false;
         this.user = null;
         localStorage.removeItem('user');
-        crud.signedOut();
       }
     });
   }
@@ -49,7 +50,9 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   signOut() {
+    console.log('signing out');
     this.authService.SignOut();
     localStorage.removeItem('user');
+    this.crud.signedOut();
   }
 }

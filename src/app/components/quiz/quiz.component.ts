@@ -14,6 +14,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   // db url : https://flashcards-68d42.firebaseio.com/
   questions: Question[] = [];
   shuffledQs: Question[] = [];
+  questionsMap: Map<string, Question[]>;
   readonly refId: string = '1_Aa13LBY37FD_7KR1EznSZoNNxnt-MUBaAnUYrLie0w';
   dbRef: firebase.database.Reference;
   categories: string[] = [];
@@ -41,7 +42,8 @@ export class QuizComponent implements OnInit, OnDestroy {
     } else {
       this.questions = this.crud.getQuestions();
       this.shuffledQs = this.crud.getShuffled();
-      this.categories = this.crud.getCategories();
+      // this.categories = this.crud.getCategories();
+      this.questionsMap = this.crud.getMap();
       this.initSkipMap();
       this.syncPreferencesFromDB();
       this.syncCorrectAnswersFromDB();
@@ -197,9 +199,9 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   initSkipMap() {
-    this.categories.forEach((category: string) => {
+    this.questionsMap.forEach((questions, category) => {
       this.skipMap.set(category, false);
-    });
+    })
   }
 
   updateCheck(category: string) {
@@ -249,6 +251,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   syncCorrectAnswersFromDB() {
     console.log('Syncing answers from crud');
     this.correctQuestions = this.crud.getCorrectQuestions();
+    console.log('got ' + this.correctQuestions.size + ' correct questions');
     this.shuffledQs.forEach(question => {
       if (this.correctQuestions.has(question.question + '__' + question.category)) {
         question.correct = true;

@@ -26,11 +26,13 @@ export class AllQuestionsComponent implements OnInit {
   }
 
   syncCorrectness() {
+    console.log('syncing correctness');
     this.map.forEach((questions, category, map) => {
       questions.forEach((question) => {
         if (this.correctMap.has(category)) {
           if (this.correctMap.get(category).has(question.question)) {
             question.correct = true;
+            console.log('setting question: ' + question + ' as correct');
           }
         } else {
           // add empty set to correctmap so we can count total correct q's later
@@ -38,6 +40,7 @@ export class AllQuestionsComponent implements OnInit {
         }
       });
     });
+    console.log('finished syncing');
   }
 
 }

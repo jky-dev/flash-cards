@@ -11,7 +11,6 @@ export class CrudService {
   questions: Question[] = [];
   shuffledQs: Question[] = [];
   correctQuestions: Set<string> = new Set();
-  categories: string[] = [];
   skipCategories: string[] = [];
   alwaysShowAnswer = false;
   skipCorrectAnswers = false;
@@ -35,10 +34,12 @@ export class CrudService {
 
   initQuestions() {
     // init questions
+    this.questionsLoaded = false;
+    this.isReady.next(this.questionsLoaded);
     console.log('loading questions from db');
     this.db.database.ref(this.questionsRefId).once('value').then((snapshot: DataSnapshot) => {
       this.questions = [];
-      this.categories = [];
+      this.shuffledQs = [];
       snapshot.forEach(element => {
         element.val().forEach(q => {
           if (q.question.length === 0) {
@@ -53,9 +54,14 @@ export class CrudService {
             this.map.set(question.category, array);
           }
         });
-        this.categories.push(element.key);
       });
+      this.shuffledQs = [...this.questions];
       this.shuffle();
+      this.questionsLoaded = true;
+      this.isReady.next(this.questionsLoaded);
+    }).catch(error => {
+      console.log('Error fetching questions');
+      console.log(error);
       this.questionsLoaded = true;
       this.isReady.next(this.questionsLoaded);
     });
@@ -81,6 +87,7 @@ export class CrudService {
     }
   }
 
+  // Fetches correct questions from a user 
   initCorrectQuestions() {
     if (localStorage.getItem('user')) {
       console.log('loading correct q\'s from db');
@@ -110,17 +117,15 @@ export class CrudService {
     this.alwaysShowAnswer = false;
     this.skipCorrectAnswers = false;
     this.correctQuestions.clear();
+    this.correctQuestionsMap.clear();
+    this.shuffledQs = [];
     this.user = null;
-    this.categories = [];
     this.map.clear();
     this.questions = [];
     this.initQuestions();
   }
 
   shuffle() {
-    if (this.shuffledQs.length !== this.questions.length) {
-      this.shuffledQs = [...this.questions];
-    }
     const array = this.shuffledQs;
     let length = array.length;
     let i: number;
@@ -147,10 +152,6 @@ export class CrudService {
 
   getShuffled() {
     return this.shuffledQs;
-  }
-
-  getCategories() {
-    return this.categories;
   }
 
   getSkipCategories() {
@@ -204,6 +205,19 @@ export class CrudService {
     if (uid === null) {
       console.log('setting correct questions locally');
       this.correctQuestions = questions;
+      this.correctQuestionsMap.clear();
+      questions.forEach(q => {
+        const split = q.split('__');
+        const question = split[0];
+        const category = split[1];
+        if (this.correctQuestionsMap.has(category)) {
+          this.correctQuestionsMap.get(category).add(question);
+        } else {
+          const set = new Set<string>();
+          set.add(question);
+          this.correctQuestionsMap.set(category, set);
+        }
+      })
     } else {
       console.log('setting correct questions to DB');
       const temp: string[] = [];
