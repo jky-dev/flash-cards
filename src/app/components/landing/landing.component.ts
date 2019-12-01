@@ -77,7 +77,6 @@ export class LandingComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result);
       if (result) {
         this.crud.submitFeedback(result);
         this.snackbar.open('Feedback submitted!', 'Dismiss', {
