@@ -3,11 +3,13 @@ import { Question } from 'src/question';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { DataSnapshot } from '@angular/fire/database/interfaces';
 import { Subject } from 'rxjs';
+import { NGXLogger } from 'ngx-logger';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CrudService {
+  loggerString = "[CRUD]";
   questions: Question[] = [];
   shuffledQs: Question[] = [];
   correctQuestions: Set<string> = new Set();
@@ -21,10 +23,11 @@ export class CrudService {
   correctQuestionsMap = new Map<string, Set<string>>();
   readonly questionsRefId: string = '1_Aa13LBY37FD_7KR1EznSZoNNxnt-MUBaAnUYrLie0w';
 
-  constructor(private db: AngularFireDatabase) {}
+  constructor(private db: AngularFireDatabase, private logger: NGXLogger) {}
 
   initialize() {
     if (this.questionsLoaded) {
+      this.logger.debug(this.loggerString, 'INIT questions already loaded');
       this.isReady.next(this.questionsLoaded);
       return;
     } else {
@@ -36,8 +39,9 @@ export class CrudService {
     // init questions
     this.questionsLoaded = false;
     this.isReady.next(this.questionsLoaded);
-    console.log('loading questions from db');
+    this.logger.debug(this.loggerString, 'Init questions, and question map');
     this.db.database.ref(this.questionsRefId).once('value').then((snapshot: DataSnapshot) => {
+      this.logger.debug(this.loggerString, 'Got questions from DB');
       this.questions = [];
       this.shuffledQs = [];
       snapshot.forEach(element => {
@@ -60,8 +64,8 @@ export class CrudService {
       this.questionsLoaded = true;
       this.isReady.next(this.questionsLoaded);
     }).catch(error => {
-      console.log('Error fetching questions');
-      console.log(error);
+      this.logger.error(this.loggerString, 'Init questions error');
+      this.logger.error(this.loggerString, error);
       this.questionsLoaded = true;
       this.isReady.next(this.questionsLoaded);
     });
@@ -69,20 +73,31 @@ export class CrudService {
 
   initPreferences() {
     if (localStorage.getItem('user')) {
-      console.log('loading preferences from db');
+      this.logger.debug(this.loggerString, 'Init preferences');
       this.user = JSON.parse(localStorage.getItem('user'));
       this.db.database.ref('users/' + this.user.uid + '/preferences/categories').on('value', (snapshot: DataSnapshot) => {
+        this.logger.debug(this.loggerString, 'Got preferences category');
         this.skipCategories = [];
         snapshot.forEach(element => {
           this.skipCategories.push(element.val());
         });
-        console.log('skip cats: ' + this.skipCategories);
+      }, (error) => {
+        this.logger.error(this.loggerString, 'Preferences category error');
+        this.logger.error(this.loggerString, error);
       });
       this.db.database.ref('users/' + this.user.uid + '/preferences/showAnswer').on('value', (snapshot: DataSnapshot) => {
+        this.logger.debug(this.loggerString, 'Got preferences for always showing answer');
         this.alwaysShowAnswer = snapshot.val();
+      }, (error) => {
+        this.logger.error(this.loggerString, 'Preferences always show error');
+        this.logger.error(this.loggerString, error);
       });
       this.db.database.ref('users/' + this.user.uid + '/preferences/skipCorrect').on('value', (snapshot: DataSnapshot) => {
+        this.logger.debug(this.loggerString, 'Got preferences for skip correct answers');
         this.skipCorrectAnswers = snapshot.val();
+      }, (error) => {
+        this.logger.error(this.loggerString, 'Preferences skip error');
+        this.logger.error(this.loggerString, error);
       });
     }
   }
@@ -90,9 +105,10 @@ export class CrudService {
   // Fetches correct questions from a user 
   initCorrectQuestions() {
     if (localStorage.getItem('user')) {
-      console.log('loading correct q\'s from db');
+      this.logger.debug(this.loggerString, 'Init correct questions');
       this.user = JSON.parse(localStorage.getItem('user'));
       this.db.database.ref('users/' + this.user.uid + '/correctQs/questions').on('value', (snapshot: DataSnapshot) => {
+        this.logger.debug(this.loggerString, 'Got correct questions from DB');
         this.correctQuestions = new Set();
         this.correctQuestionsMap.clear();
         snapshot.forEach(element => {
@@ -108,11 +124,15 @@ export class CrudService {
             this.correctQuestionsMap.set(category, set);
           }
         });
+      }, (error) => {
+        this.logger.error(this.loggerString, 'Correct questions error');
+        this.logger.error(this.loggerString, error);
       });
     }
   }
 
   signedOut() {
+    this.logger.debug(this.loggerString, 'Signed out');
     this.skipCategories = [];
     this.alwaysShowAnswer = false;
     this.skipCorrectAnswers = false;
@@ -126,6 +146,7 @@ export class CrudService {
   }
 
   shuffle() {
+    this.logger.debug(this.loggerString, 'Shuffling questions');
     const array = this.shuffledQs;
     let length = array.length;
     let i: number;
@@ -187,12 +208,12 @@ export class CrudService {
   // writes quiz preferences to the database
   setPreferences(uid: string, skip: string[], answer: boolean, skipCorrectAnswers: boolean) {
     if (uid === null) {
-      console.log('setting locally');
+      this.logger.debug(this.loggerString, 'Setting preferences locally');
       this.skipCategories = skip;
       this.alwaysShowAnswer = answer;
       this.skipCorrectAnswers = skipCorrectAnswers;
     } else {
-      console.log('setting preferences to db');
+      this.logger.debug(this.loggerString, 'Setting preferences to DB');
       this.db.database.ref('users/' + uid + '/preferences').set({
         categories : skip,
         showAnswer : answer,
@@ -203,7 +224,7 @@ export class CrudService {
 
   setCorrectQuestions(uid: string, questions: Set<string>) {
     if (uid === null) {
-      console.log('setting correct questions locally');
+      this.logger.debug(this.loggerString, 'Setting correct questions locally');
       this.correctQuestions = questions;
       this.correctQuestionsMap.clear();
       questions.forEach(q => {
@@ -219,7 +240,7 @@ export class CrudService {
         }
       })
     } else {
-      console.log('setting correct questions to DB');
+      this.logger.debug(this.loggerString, 'Setting correct questions to DB');
       const temp: string[] = [];
       questions.forEach((value) => {
         temp.push(value);

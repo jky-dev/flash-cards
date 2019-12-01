@@ -1,22 +1,24 @@
 import { Injectable } from '@angular/core';
 import { auth } from 'firebase/app';
 import { AngularFireAuth } from '@angular/fire/auth';
+import { NGXLogger } from 'ngx-logger';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthenticationService {
+  loggerString = '[AUTH]';
   userState;
 
-  constructor(public afAuth: AngularFireAuth) {
+  constructor(public afAuth: AngularFireAuth, private logger: NGXLogger) {
     this.afAuth.authState.subscribe(user => {
       if (user) {
         this.userState = user;
         localStorage.setItem('user', JSON.stringify(this.userState));
-        console.log('[Auth] Set LS User: ' + this.userState.uid);
+        this.logger.debug(this.loggerString, 'Got user');
       } else {
         localStorage.removeItem('user');
-        console.log('[Auth] Removed user');
+        this.logger.debug(this.loggerString, 'No user');
       }
     });
   }
@@ -25,25 +27,15 @@ export class AuthenticationService {
   AuthLogin(provider) {
     return this.afAuth.auth.signInWithPopup(provider)
     .then((res) => {
-      console.log(res);
+      this.logger.debug(this.loggerString, 'Auth login', res);
     }).catch((error) => {
-      console.log(error);
+      this.logger.debug(this.loggerString, 'Auth login error', error);
     });
   }
 
   // Login with Google
   GoogleAuth() {
     return this.AuthLogin(new auth.GoogleAuthProvider());
-  }
-
-  // Signin with email/password
-  SignIn(email, password) {
-    return this.afAuth.auth.signInWithEmailAndPassword(email, password)
-    .then((res) => {
-      console.log(res);
-    }).catch((error) => {
-      console.log(error);
-    });
   }
 
   // Sign out

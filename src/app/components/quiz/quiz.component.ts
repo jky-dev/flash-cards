@@ -4,6 +4,7 @@ import { CrudService } from 'src/app/services/crud.service';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AuthenticationService } from 'src/app/services/authentication.service';
 import { Router } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
 
 @Component({
   selector: 'app-quiz',
@@ -12,6 +13,7 @@ import { Router } from '@angular/router';
 })
 export class QuizComponent implements OnInit, OnDestroy {
   // db url : https://flashcards-68d42.firebaseio.com/
+  loggerString = '[QUIZ]';
   questions: Question[] = [];
   shuffledQs: Question[] = [];
   questionsMap: Map<string, Question[]>;
@@ -34,42 +36,51 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   authObs;
 
-  constructor(private crud: CrudService, private dialog: MatDialog, private authService: AuthenticationService, private router: Router) {}
+  constructor(
+    private crud: CrudService, 
+    private dialog: MatDialog, 
+    private authService: AuthenticationService, 
+    private router: Router,
+    private logger: NGXLogger) {}
 
   ngOnInit() {
     if (!this.crud.questionsLoaded) {
+      this.logger.debug(this.loggerString, 'Returning to home');
       this.router.navigateByUrl('/');
     } else {
+      this.authObs = this.authService.getAuthStateObservable().subscribe(user => {
+        if (user) {
+          this.logger.debug(this.loggerString, 'Got user');
+          this.user = user;
+          localStorage.setItem('user', JSON.stringify(this.user));
+        } else {
+          this.logger.debug(this.loggerString, 'No user');
+          this.user = null;
+          localStorage.removeItem('user');
+        }
+      });
+      this.logger.debug(this.loggerString, 'Init');
       this.questions = this.crud.getQuestions();
       this.shuffledQs = this.crud.getShuffled();
-      // this.categories = this.crud.getCategories();
       this.questionsMap = this.crud.getMap();
       this.initSkipMap();
       this.syncPreferencesFromDB();
       this.syncCorrectAnswersFromDB();
-      this.authObs = this.authService.getAuthStateObservable().subscribe(user => {
-        if (user) {
-          this.user = user;
-          localStorage.setItem('user', JSON.stringify(this.user));
-          console.log('[Quiz] Set LS User: ' + this.user.uid);
-        } else {
-          this.user = null;
-          localStorage.removeItem('user');
-          console.log('[Quiz] Removed user');
-        }
-      });
       this.calculateDisplayIndexes(true);
     }
   }
 
   ngOnDestroy() {
+    this.logger.debug(this.loggerString, 'Destroying');
     if (this.authObs) {
       this.authObs.unsubscribe();
     }
   }
 
   shuffle(): void {
+    this.logger.debug(this.loggerString, 'Shuffling');
     if (this.shuffledQs.length !== this.questions.length) {
+      this.logger.warn(this.loggerString, 'Shuffled length was not same as questions length');
       this.shuffledQs = [...this.questions];
     }
     const array = this.shuffledQs;
@@ -114,11 +125,13 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   markCorrect() {
-    this.shuffledQs[this.currentIndex].correct = true;
-    if (this.correctQuestions.has(this.shuffledQs[this.currentIndex].question + '__' + this.shuffledQs[this.currentIndex].category)) {
-      console.log('already exists');
+    const q = this.shuffledQs[this.currentIndex];
+    q.correct = true;
+    if (this.correctQuestions.has(q.question + '__' + q.category)) {
+      this.logger.warn(this.loggerString, q.question, 'already marked as correct');
     } else {
-      this.correctQuestions.add(this.shuffledQs[this.currentIndex].question + '__' + this.shuffledQs[this.currentIndex].category);
+      this.correctQuestions.add(q.question + '__' + q.category);
+      this.logger.debug(this.loggerString, 'Added', q.question, 'to correctQuestions');
       this.syncCorrectAnswersToDB();
       this.displayLength--;
       if (this.displayIndex === 1 && this.displayLength === 0) {
@@ -128,17 +141,20 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   markIncorrect() {
-    this.shuffledQs[this.currentIndex].correct = false;
-    if (this.correctQuestions.delete(this.shuffledQs[this.currentIndex].question + '__' + this.shuffledQs[this.currentIndex].category)) {
-      console.log('Deleted from correct set');
+    const q = this.shuffledQs[this.currentIndex];
+    q.correct = false;
+    if (this.correctQuestions.delete(q.question + '__' + q.category)) {
+      this.logger.debug(this.loggerString, 'Removing', q.question, 'from correctQuestions');
       this.displayLength++;
       this.syncCorrectAnswersToDB();
     } else {
-      console.log('Did not exist');
+      this.logger.warn(this.loggerString, q.question, 'Not found in correctQuestions');
     }
   }
 
   calculateDisplayIndexes(justShuffled: boolean) {
+    this.logger.debug(this.loggerString, 'Calculating display indexes');
+
     let tempIndex = 0;
     let totalQuestions = 0;
     let firstActualIndex = -1;
@@ -181,6 +197,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   nextQuestion(): boolean {
+    this.logger.debug(this.loggerString, 'Finding next question');
     let tempIndex = this.currentIndex + 1;
     while (this.skipMap.get(this.shuffledQs[tempIndex].category) ||
     this.shuffledQs[tempIndex].correct === true && this.skipCorrectQuestions) {
@@ -199,6 +216,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   previousQuestion(): boolean {
+    this.logger.debug(this.loggerString, 'Finding prev question');
     let tempIndex = this.currentIndex - 1;
     while (this.skipMap.get(this.shuffledQs[tempIndex].category) ||
     this.shuffledQs[tempIndex].correct === true && this.skipCorrectQuestions) {
@@ -218,6 +236,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   reset() {
+    this.logger.debug(this.loggerString, 'Resetting');
     this.currentIndex = 0;
     this.showAnswer = false;
     this.shuffle();
@@ -227,21 +246,25 @@ export class QuizComponent implements OnInit, OnDestroy {
   }
 
   initSkipMap() {
+    this.logger.debug(this.loggerString, 'Initializing skip categories');
     this.questionsMap.forEach((questions, category) => {
       this.skipMap.set(category, false);
     })
   }
 
   updateCheck(category: string) {
+    this.logger.debug(this.loggerString, 'Updating skip category', category, 'to', !this.skipMap.get(category));
     this.skipMap.set(category, !this.skipMap.get(category));
   }
 
   openDialog() {
+    this.logger.debug(this.loggerString, 'Opening settings');
     const dialogRef = this.dialog.open(PreferencesDialog, {
       data: { map: this.skipMap, alwaysShow: this.alwaysShow, skipCorrectQuestions: this.skipCorrectQuestions }
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      this.logger.debug(this.loggerString, 'Closed settings');
       this.alwaysShow = dialogRef.componentInstance.data.alwaysShow;
       this.skipCorrectQuestions = dialogRef.componentInstance.data.skipCorrectQuestions;
       this.syncPreferencesToDB();
@@ -251,7 +274,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   // updates preferences from the database
   syncPreferencesFromDB() {
-    console.log('Syncing preferences from crud');
+    this.logger.debug(this.loggerString, 'Syncing settings from CRUD service');
     this.crud.getSkipCategories().forEach(element => {
       this.skipMap.set(element, true);
     });
@@ -261,7 +284,7 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   // writes preferences to database
   syncPreferencesToDB() {
-    console.log('sync to crud');
+    this.logger.debug(this.loggerString, 'Syncing settings to CRUD service');
     const temp = [];
     this.skipMap.forEach((skip: boolean, category: string) => {
       if (skip) {
@@ -277,9 +300,9 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   // syncs correct questions to our shuffled list
   syncCorrectAnswersFromDB() {
-    console.log('Syncing answers from crud');
+    this.logger.debug(this.loggerString, 'Syncing correct answers from CRUD service');
     this.correctQuestions = this.crud.getCorrectQuestions();
-    console.log('got ' + this.correctQuestions.size + ' correct questions');
+    this.logger.debug(this.loggerString, this.correctQuestions.size, 'correct questions');
     this.shuffledQs.forEach(question => {
       if (this.correctQuestions.has(question.question + '__' + question.category)) {
         question.correct = true;
@@ -289,12 +312,10 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   // syncs correct questions to our shuffled list
   syncCorrectAnswersToDB() {
-    console.log('Syncing answers to crud');
+    this.logger.debug(this.loggerString, 'Syncing correct answers to CRUD service');
     if (this.user === null) {
-      console.log('not logged in');
       this.crud.setCorrectQuestions(null, this.correctQuestions);
     } else {
-      console.log('logged in ' + this.user.uid);
       this.crud.setCorrectQuestions(this.user.uid, this.correctQuestions);
     }
   }
