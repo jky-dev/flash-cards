@@ -144,7 +144,7 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.userAnswer.split(' ').forEach((word) => {
       userAnswerSet.add(word.toLowerCase().replace(/[^a-zA-Z ]/g, ''));
     });
-    const totalWords = correctSet.size;
+    const totalWords = correctSet.has('') ? correctSet.size - 1 : correctSet.size;
     let matchingWords = 0;
     correctSet.forEach((word) => {
       if (userAnswerSet.has(word)) {
@@ -294,7 +294,7 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.logger.debug(this.loggerString, 'Initializing skip categories');
     this.questionsMap.forEach((questions, category) => {
       this.skipMap.set(category, false);
-    })
+    });
   }
 
   updateCheck(category: string) {
