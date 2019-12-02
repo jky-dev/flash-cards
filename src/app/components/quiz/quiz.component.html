@@ -31,6 +31,21 @@
           <h2 class="question">
             {{shuffledQs[currentIndex].question.endsWith('?') ? [shuffledQs[currentIndex].question] : [shuffledQs[currentIndex].question] + '?'}}
           </h2>
+          <mat-form-field appearance="outline">
+            <mat-label>Enter Your Answer</mat-label>
+            <textarea
+              matInput [(ngModel)]="userAnswer"
+              cdkTextareaAutosize
+              #autosize="cdkTextareaAutosize"></textarea>
+          </mat-form-field>
+          <div class="mark-row" fxLayout="row" fxLayoutAlign="start center">
+            <button class="mark-button" mat-stroked-button (click)="markAnswer()">MARK</button>
+            <span *ngIf="percentageCorrect > 50" class="correct">Correct!</span>
+            <span *ngIf="percentageCorrect <= 50 && percentageCorrect != -1" class="incorrect">Incorrect!</span>
+            <button mat-icon-button class="info-button" *ngIf="percentageCorrect != -1" (click)="percentage.toggle()" #percentage="matTooltip" matTooltip="{{percentageCorrect}}% unique words matched">
+              <mat-icon>info_outline</mat-icon>
+            </button>
+          </div>
           <h3 class="answer" *ngIf="showAnswer || alwaysShow">{{shuffledQs[currentIndex].answer}}</h3>
         </div>
         <div *ngIf="showAnswer || alwaysShow" fxLayout="row" fxLayoutAlign="space-evenly center">

@@ -18,6 +18,23 @@ mat-card {
   margin-bottom: 1rem;
 }
 
+mat-form-field {
+  width: 100%;
+}
+
+.mark-button {
+  margin-right: 1rem;
+}
+
+.mark-row {
+  margin-bottom: 1rem;
+  height: 40px;
+}
+
+.info-button {
+  color: rgba(0, 0, 0, 0.5);
+}
+
 .quiz-buttons > div > button {
   margin: 0 1rem;
 }

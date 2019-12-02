@@ -27,6 +27,8 @@ export class QuizComponent implements OnInit, OnDestroy {
   currentIndex = 0;
   displayIndex = 0;
   displayLength = 0;
+  userAnswer = '';
+  percentageCorrect = -1;
 
   // Preferences
   skipMap = new Map<string, boolean>();
@@ -39,9 +41,9 @@ export class QuizComponent implements OnInit, OnDestroy {
   authObs;
 
   constructor(
-    private crud: CrudService, 
-    private dialog: MatDialog, 
-    private authService: AuthenticationService, 
+    private crud: CrudService,
+    private dialog: MatDialog,
+    private authService: AuthenticationService,
     private router: Router,
     private logger: NGXLogger,
     private snackbar: MatSnackBar) {}
@@ -99,6 +101,8 @@ export class QuizComponent implements OnInit, OnDestroy {
       array[length] = array[i];
       array[i] = temp;
     }
+    this.userAnswer = '';
+    this.percentageCorrect = -1;
     this.calculateDisplayIndexes(true);
   }
 
@@ -128,6 +132,37 @@ export class QuizComponent implements OnInit, OnDestroy {
       return true;
     }
     return false;
+  }
+
+  markAnswer() {
+    const correctAnswer = this.shuffledQs[this.currentIndex].answer;
+    const correctSet = new Set<string>();
+    correctAnswer.split(' ').forEach((word) => {
+      correctSet.add(word.toLowerCase().replace(/[^a-zA-Z ]/g, ''));
+    });
+    const userAnswerSet = new Set<string>();
+    this.userAnswer.split(' ').forEach((word) => {
+      userAnswerSet.add(word.toLowerCase().replace(/[^a-zA-Z ]/g, ''));
+    });
+    const totalWords = correctSet.size;
+    let matchingWords = 0;
+    correctSet.forEach((word) => {
+      if (userAnswerSet.has(word)) {
+        if (word === '') {
+          return;
+        }
+        this.logger.debug(this.loggerString, word, 'matched');
+        matchingWords++;
+      }
+    });
+    this.percentageCorrect = Math.round(((matchingWords / totalWords) * 10000) / 100);
+    if (this.percentageCorrect > 50) {
+      this.markCorrect();
+    } else {
+      this.markIncorrect();
+    }
+    this.showAnswer = true;
+    this.logger.debug(this.loggerString, this.percentageCorrect);
   }
 
   markCorrect() {
@@ -204,6 +239,8 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   nextQuestion(): boolean {
     this.logger.debug(this.loggerString, 'Finding next question');
+    this.userAnswer = '';
+    this.percentageCorrect = -1;
     let tempIndex = this.currentIndex + 1;
     while (this.skipMap.get(this.shuffledQs[tempIndex].category) ||
     this.shuffledQs[tempIndex].correct === true && this.skipCorrectQuestions) {
@@ -223,6 +260,8 @@ export class QuizComponent implements OnInit, OnDestroy {
 
   previousQuestion(): boolean {
     this.logger.debug(this.loggerString, 'Finding prev question');
+    this.userAnswer = '';
+    this.percentageCorrect = -1;
     let tempIndex = this.currentIndex - 1;
     while (this.skipMap.get(this.shuffledQs[tempIndex].category) ||
     this.shuffledQs[tempIndex].correct === true && this.skipCorrectQuestions) {
