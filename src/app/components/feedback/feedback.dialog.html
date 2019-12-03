@@ -8,7 +8,11 @@
     <input matInput [(ngModel)]="email" placeholder="Email (optional)">
   </mat-form-field>
   <mat-form-field>
-    <textarea matInput [(ngModel)]="feedback" placeholder="Enter your feedback here"></textarea>
+    <textarea
+    matInput [(ngModel)]="feedback"
+    placeholder="Enter your feedback here"
+    cdkTextareaAutosize
+    #autosize="cdkTextareaAutosize"></textarea>
   </mat-form-field>
   <br>
   <button mat-raised-button (click)=submit()>Submit!</button>    
