@@ -46,13 +46,13 @@
               <mat-icon>info_outline</mat-icon>
             </button>
           </div>
-          <h3 class="answer" *ngIf="showAnswer || alwaysShow">{{shuffledQs[currentIndex].answer}}</h3>
+          <p class="answer" *ngIf="showAnswer || alwaysShow">{{shuffledQs[currentIndex].answer}}</p>
         </div>
         <div *ngIf="showAnswer || alwaysShow" fxLayout="row" fxLayoutAlign="space-evenly center">
-          <button mat-icon-button mat-raised-button (click)="markCorrect()">
+          <button mat-icon-button mat-stroked-button (click)="markCorrect()">
             <mat-icon>check</mat-icon>
           </button>
-          <button mat-icon-button mat-raised-button (click)="markIncorrect()">
+          <button mat-icon-button mat-stroked-button (click)="markIncorrect()">
             <mat-icon>close</mat-icon>
           </button>
         </div>
