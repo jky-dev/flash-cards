@@ -27,7 +27,7 @@ body {
 }
 
 mat-card, mat-expansion-panel, mat-expansion-panel > * {
-  background: rgba(255, 255, 255, 0.25) !important;
+  background: rgba(255, 255, 255, 0.65) !important;
 }
 
 .logo:focus {
