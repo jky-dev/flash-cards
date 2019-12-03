@@ -147,11 +147,11 @@ export class QuizComponent implements OnInit, OnDestroy {
     const correctAnswer = this.shuffledQs[this.currentIndex].answer;
     const correctSet = new Set<string>();
     correctAnswer.split(' ').forEach((word) => {
-      correctSet.add(word.toLowerCase().replace(/[^a-zA-Z ]/g, ''));
+      correctSet.add(word.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, ''));
     });
     const userAnswerSet = new Set<string>();
     this.userAnswer.split(' ').forEach((word) => {
-      userAnswerSet.add(word.toLowerCase().replace(/[^a-zA-Z ]/g, ''));
+      userAnswerSet.add(word.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, ''));
     });
     const totalWords = correctSet.has('') ? correctSet.size - 1 : correctSet.size;
     let matchingWords = 0;
