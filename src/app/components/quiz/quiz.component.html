@@ -19,7 +19,7 @@
   </div>
   <div class="quiz-body" fxFlex fxFlex.gt-xs="30%">
     <mat-card fxFlex>
-      <div *ngIf="displayLength !== 0" class="card-container" fxLayout="column" fxLayoutAlign="space-between stretch">
+      <div *ngIf="displayLength !== 0 || markedFinalQuestion" class="card-container" fxLayout="column" fxLayoutAlign="space-between stretch">
         <div fxFlex>
           <h3 class="category" fxLayout="row" fxLayoutAlign="space-between center">
             <span fxFlex>
@@ -57,16 +57,16 @@
           </button>
         </div>
       </div>
-      <div *ngIf="displayLength === 0" fxLayout="row" fxFlexLayout="center center">
+      <div *ngIf="displayLength === 0 && !markedFinalQuestion" fxLayout="row" fxFlexLayout="center center">
         <h1 fxFlex>No more questions left! Change the preferences to get new questions and continue on :)</h1>
       </div>
     </mat-card>
   </div>
   <div class="quiz-buttons">
     <div fxLayout="row" fxLayoutAlign="center center">
-      <button mat-raised-button [disabled]="disablePrevButton()" (click)="previousQuestion()">Back</button>
-      <button id="hideShowButton" mat-raised-button (click)="toggleShowAnswer()">{{showAnswer ? 'Hide' : 'Check'}}</button>
-      <button mat-raised-button [disabled]="disableNextButton()" (click)="nextQuestion()">Next</button>
+      <button mat-raised-button [disabled]="disablePrevButton()" (click)="previousQuestion()">BACK</button>
+      <button id="hideShowButton" mat-raised-button (click)="toggleShowAnswer()">{{showAnswer ? 'HIDE' : 'CHECK'}}</button>
+      <button mat-raised-button [disabled]="disableNextButton()" (click)="nextQuestion()">NEXT</button>
     </div>
   </div>
 </div>

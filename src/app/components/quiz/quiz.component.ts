@@ -29,6 +29,7 @@ export class QuizComponent implements OnInit, OnDestroy {
   displayLength = 0;
   userAnswer = '';
   percentageCorrect = -1;
+  markedFinalQuestion = false;
 
   // Preferences
   skipMap = new Map<string, boolean>();
@@ -104,6 +105,7 @@ export class QuizComponent implements OnInit, OnDestroy {
     this.userAnswer = '';
     this.percentageCorrect = -1;
     this.calculateDisplayIndexes(true);
+    this.markedFinalQuestion = false;
   }
 
   disableNextButton() {
@@ -124,6 +126,13 @@ export class QuizComponent implements OnInit, OnDestroy {
         return true;
       }
     }
+
+    // case where we mark last question as incorrect again, causing it to go from 0/0 to 0/1,
+    // but still on the same question
+    if (this.displayIndex === 0 && this.displayLength) {
+      return true;
+    }
+
     return false;
   }
 
@@ -175,8 +184,10 @@ export class QuizComponent implements OnInit, OnDestroy {
       this.logger.debug(this.loggerString, 'Added', q.question, 'to correctQuestions');
       this.syncCorrectAnswersToDB();
       this.displayLength--;
-      if (this.displayIndex === 1 && this.displayLength === 0) {
+      if (this.displayLength === 0) {
         this.displayIndex = 0;
+        this.markedFinalQuestion = true;
+        this.showFinishedNotification();
       }
     }
   }
@@ -188,14 +199,24 @@ export class QuizComponent implements OnInit, OnDestroy {
       this.logger.debug(this.loggerString, 'Removing', q.question, 'from correctQuestions');
       this.displayLength++;
       this.syncCorrectAnswersToDB();
+      // when re-marking final question in category as incorrect
+      if (this.displayIndex === 0) {
+        this.markedFinalQuestion = false;
+      }
     } else {
       this.logger.warn(this.loggerString, q.question, 'Not found in correctQuestions');
     }
   }
 
+  showFinishedNotification() {
+    this.snackbar.open('No more questions left! Change the preferences to get new questions and continue on :)', 'Dismiss', {
+      duration : 5000
+    });
+  }
+
   calculateDisplayIndexes(justShuffled: boolean) {
     this.logger.debug(this.loggerString, 'Calculating display indexes');
-
+    this.markedFinalQuestion = false;
     let tempIndex = 0;
     let totalQuestions = 0;
     let firstActualIndex = -1;
