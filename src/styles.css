@@ -26,7 +26,7 @@ body {
   background-size: cover;
 }
 
-mat-card {
+mat-card, mat-expansion-panel {
   background: rgba(255, 255, 255, 0.55) !important;
 }
 
