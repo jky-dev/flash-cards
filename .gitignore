@@ -45,6 +45,10 @@ testem.log
 .DS_Store
 Thumbs.db
 
+<<<<<<< HEAD
 /gzipped
 
 /src/environments
+=======
+/gzipped
+>>>>>>> 653af1cf10e634aa6f7d1827daedfd53853ac413
